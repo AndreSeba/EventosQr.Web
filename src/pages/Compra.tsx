@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { api, msgError } from "../api";
 import { dinero, fechaLarga } from "../format";
+import { comprimirImagen } from "../imagen";
 import type { EventoPublico } from "../types";
 
 export default function Compra() {
@@ -26,11 +27,17 @@ export default function Compra() {
     const archivo = datos.get("comprobante");
     if (!tipoId) return setResultado({ ok: false, texto: "Elegí un tipo de ticket." });
     if (!(archivo instanceof File) || archivo.size === 0) return setResultado({ ok: false, texto: "Adjuntá el comprobante." });
-    if (archivo.size > ev!.maxComprobanteMb * 1024 * 1024) return setResultado({ ok: false, texto: `El archivo supera ${ev!.maxComprobanteMb} MB.` });
     datos.set("tipoTicketId", tipoId);
     setEnviando(true);
     setResultado(null);
     try {
+      // Se reduce la resolución en el celular antes de subir (los PDF pasan tal cual)
+      const liviano = await comprimirImagen(archivo);
+      if (liviano.size > ev!.maxComprobanteMb * 1024 * 1024) {
+        setEnviando(false);
+        return setResultado({ ok: false, texto: `El archivo supera ${ev!.maxComprobanteMb} MB.` });
+      }
+      datos.set("comprobante", liviano, liviano.name);
       const r = await api<{ numero: number }>(`/public/eventos/${slug}/ordenes`, { form: datos });
       form.reset();
       setTipoId("");
