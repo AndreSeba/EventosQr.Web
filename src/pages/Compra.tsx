@@ -90,8 +90,8 @@ export default function Compra() {
         <form onSubmit={enviar}>
           <label htmlFor="nombre">Nombre completo</label>
           <input id="nombre" name="nombre" required minLength={2} maxLength={100} autoComplete="name" />
-          <label htmlFor="telefono">Teléfono / WhatsApp</label>
-          <input id="telefono" name="telefono" type="tel" required maxLength={25} autoComplete="tel" />
+          <label htmlFor="telefono">Celular / WhatsApp (8 dígitos, ej. 71234598)</label>
+          <input id="telefono" name="telefono" type="tel" inputMode="tel" required maxLength={25} autoComplete="tel" placeholder="71234598" />
           <label htmlFor="email">Correo donde recibirás el QR</label>
           <input id="email" name="email" type="email" required maxLength={120} autoComplete="email" />
           <label htmlFor="cantidad">Cantidad de entradas</label>
