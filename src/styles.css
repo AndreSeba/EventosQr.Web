@@ -65,7 +65,7 @@ button.mini { padding: 7px 11px; font-size: .82rem; }
 .oculto { position: absolute; left: -9999px; width: 1px; height: 1px; }
 
 /* Página de compra con la imagen del evento de fondo */
-.fondo-evento { position: fixed; inset: 0; z-index: 0; background-size: cover; background-position: center 48%; background-repeat: no-repeat; }
+.fondo-evento { position: fixed; inset: 0; z-index: -1; background-size: cover; background-position: center 48%; background-repeat: no-repeat; }
 .fondo-evento::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.22) 0%, rgba(0,0,0,.12) 40%, rgba(0,0,0,.7) 72%, rgba(0,0,0,.9) 100%); }
 .publica.con-fondo { position: relative; z-index: 1; padding-top: 56vh; } /* deja a la vista el arte (título) del evento antes del formulario */
 .publica.con-fondo h1 { text-shadow: 0 2px 16px rgba(0,0,0,.9); }
