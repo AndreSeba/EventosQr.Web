@@ -52,8 +52,9 @@ export default function Compra() {
   const elegido = ev.tipos.find((t) => t.id === tipoId);
 
   return (
-    <main className="publica">
-      {ev.imagenUrl && <img className="img-evento" src={ev.imagenUrl} alt={ev.nombre} />}
+    <main className={`publica${ev.imagenUrl ? " con-fondo" : ""}`}>
+      {/* La imagen del evento va de fondo de toda la página, con una capa oscura para que el texto se lea */}
+      {ev.imagenUrl && <div className="fondo-evento" style={{ backgroundImage: `url("${ev.imagenUrl}")` }} aria-hidden="true" />}
       <h1>{ev.nombre}</h1>
       <p className="suave">
         {fechaLarga(ev.fechaInicio)}

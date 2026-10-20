@@ -63,3 +63,13 @@ button.mini { padding: 7px 11px; font-size: .82rem; }
 #lector { width: 100%; border-radius: 14px; overflow: hidden; background: #000; min-height: 240px; }
 .vacio { text-align: center; padding: 28px 12px; border: 2px dashed var(--borde); border-radius: 14px; color: var(--suave); }
 .oculto { position: absolute; left: -9999px; width: 1px; height: 1px; }
+
+/* Página de compra con la imagen del evento de fondo */
+.fondo-evento { position: fixed; inset: 0; z-index: -1; background-size: cover; background-position: center top; background-repeat: no-repeat; }
+.fondo-evento::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,.72) 45%, rgba(0,0,0,.88) 100%); }
+.publica.con-fondo h1 { text-shadow: 0 2px 16px rgba(0,0,0,.9); }
+.publica.con-fondo > p, .publica.con-fondo .suave { text-shadow: 0 1px 8px rgba(0,0,0,.9); }
+.publica.con-fondo .card { background: rgba(10,10,10,.72); border-color: rgba(255,255,255,.16); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.publica.con-fondo input, .publica.con-fondo select { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.22); }
+.publica.con-fondo .tipo { background: rgba(0,0,0,.35); }
+.publica.con-fondo .tipo.sel { background: rgba(255,255,255,.14); border-color: #fff; }
