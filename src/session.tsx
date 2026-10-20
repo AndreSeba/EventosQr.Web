@@ -32,8 +32,9 @@ export function SesionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!getToken()) return;
-    api<{ usuario: Usuario }>("/auth/me")
-      .then((r) => { setUsuario(r.usuario); return recargarEventos(); })
+    // En paralelo (antes uno esperaba al otro): cada viaje Bolivia→servidor cuesta ~300 ms
+    Promise.all([api<{ usuario: Usuario }>("/auth/me"), recargarEventos()])
+      .then(([r]) => setUsuario(r.usuario))
       .catch(() => salir())
       .finally(() => setCargando(false));
   }, [recargarEventos, salir]);

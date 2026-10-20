@@ -24,11 +24,11 @@ export default function Ordenes() {
     setTrabajando(o.id);
     setMsg(null);
     try {
-      const r = await api<{ correoOk?: boolean; error?: string }>(`/ordenes/${o.id}/${ruta}`, { body: body ?? {} });
-      setMsg(r.correoOk === false
-        ? { ok: false, t: `Hecho, pero el correo falló (${r.error}). Usá «Reenviar correo».` }
-        : { ok: true, t: ruta === "aprobar" ? "Aprobada y entrada enviada." : ruta === "rechazar" ? "Rechazada y comprador notificado." : "Correo reenviado." });
+      await api(`/ordenes/${o.id}/${ruta}`, { body: body ?? {} });
+      // El API responde al instante y envía el correo en segundo plano; se vuelve a consultar para ver si salió o falló.
+      setMsg({ ok: true, t: ruta === "aprobar" ? "Aprobada. La entrada se está enviando por correo…" : ruta === "rechazar" ? "Rechazada. El aviso se está enviando por correo…" : "Correo reenviado." });
       await cargar();
+      if (ruta !== "reenviar") setTimeout(cargar, 7000);
     } catch (e) { setMsg({ ok: false, t: msgError(e) }); }
     finally { setTrabajando(null); }
   }
