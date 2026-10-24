@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { ChevronRight } from "lucide-react";
 import { api, msgError } from "../api";
 import { useSesion } from "../session";
 
@@ -25,7 +26,7 @@ export default function Perfil() {
       <div className="card">
         <strong>{usuario?.nombre}</strong>
         <div className="suave">{usuario?.email} · {usuario?.rol}</div>
-        {usuario?.rol === "admin" && <p><Link to="/usuarios">Gestionar equipo →</Link></p>}
+        {usuario?.rol === "admin" && <p><Link to="/usuarios">Gestionar equipo <ChevronRight size={14} style={{ verticalAlign: "-2px" }} /></Link></p>}
       </div>
       <form className="card" onSubmit={cambiar}>
         <h2>Cambiar contraseña</h2>

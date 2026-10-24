@@ -74,3 +74,25 @@ button.mini { padding: 7px 11px; font-size: .82rem; }
 .publica.con-fondo input, .publica.con-fondo select { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.22); }
 .publica.con-fondo .tipo { background: rgba(0,0,0,.35); }
 .publica.con-fondo .tipo.sel { background: rgba(255,255,255,.14); border-color: #fff; }
+/* Iconos (lucide) en botones y barra inferior */
+button svg, .btn svg { vertical-align: -3px; margin-right: 4px; flex: none; }
+.nav a { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.nav a .ico { display: block; margin: 0 auto; }
+
+/* Resultado del escáner: tarjeta en el centro de la pantalla, con barra de tiempo */
+.resultado-fondo { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 20px;
+  background: rgba(0,0,0,.6); animation: aparecer .12s ease-out; }
+.resultado-centro { width: 100%; max-width: 380px; text-align: center; padding: 30px 20px 18px; border-radius: 22px; box-shadow: 0 10px 50px rgba(0,0,0,.6);
+  display: flex; flex-direction: column; align-items: center; gap: 6px; animation: crecer .16s ease-out; }
+.resultado-centro .grande { font-size: 2.3rem; font-weight: 900; letter-spacing: .02em; line-height: 1.1; margin-top: 4px; }
+.resultado-centro .quien { font-size: 1.35rem; font-weight: 700; margin-top: 6px; }
+.resultado-centro .detalle { font-size: 1.02rem; opacity: .9; }
+.resultado-centro .toca { font-size: .78rem; opacity: .65; margin-top: 8px; }
+.resultado-centro.VALIDA { background: var(--ok); color: #04210f; }
+.resultado-centro.YA_USADA, .resultado-centro.ANULADA { background: var(--aviso); color: #231a00; }
+.resultado-centro.INVALIDA, .resultado-centro.ERROR { background: var(--mal); color: #fff; }
+.barra-tiempo { width: 100%; height: 6px; border-radius: 999px; background: rgba(0,0,0,.18); overflow: hidden; margin-top: 16px; }
+.barra-tiempo span { display: block; height: 100%; width: 100%; background: currentColor; opacity: .7; transform-origin: left; animation-name: vaciar; animation-timing-function: linear; animation-fill-mode: forwards; }
+@keyframes vaciar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@keyframes aparecer { from { opacity: 0; } to { opacity: 1; } }
+@keyframes crecer { from { transform: scale(.92); opacity: .5; } to { transform: scale(1); opacity: 1; } }

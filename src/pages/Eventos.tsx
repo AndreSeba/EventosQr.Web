@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Plus } from "lucide-react";
 import { api, msgError } from "../api";
 import { fechaHora } from "../format";
 import { useSesion } from "../session";
@@ -25,7 +26,7 @@ export default function Eventos() {
     <>
       <div className="fila entre">
         <h1>Gestionar eventos</h1>
-        <Link className="btn" to="/eventos/nuevo">＋ Nuevo</Link>
+        <Link className="btn" to="/eventos/nuevo"><Plus size={16} /> Nuevo</Link>
       </div>
       <div className="chips">
         <button className={`chip ${!archivados ? "act" : ""}`} onClick={() => setArchivados(false)}>Activos</button>

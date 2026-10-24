@@ -1,4 +1,5 @@
 import { Navigate, NavLink, Outlet, Route, Routes, useLocation } from "react-router-dom";
+import { CalendarDays, LayoutDashboard, ScanQrCode, Ticket, Wallet, type LucideIcon } from "lucide-react";
 import { useSesion } from "./session";
 import type { Rol } from "./types";
 import Compra from "./pages/Compra";
@@ -12,12 +13,12 @@ import Escaner from "./pages/Escaner";
 import Usuarios from "./pages/Usuarios";
 import Perfil from "./pages/Perfil";
 
-const ITEMS: { a: string; ico: string; txt: string; roles: Rol[] }[] = [
-  { a: "/", ico: "▦", txt: "Panel", roles: ["admin", "rrpp", "staff"] },
-  { a: "/eventos", ico: "◫", txt: "Eventos", roles: ["admin"] },
-  { a: "/ordenes", ico: "$", txt: "Órdenes", roles: ["admin"] },
-  { a: "/escaner", ico: "⌖", txt: "Escáner", roles: ["admin", "staff"] },
-  { a: "/tickets", ico: "🎟", txt: "Tickets", roles: ["admin", "rrpp", "staff"] },
+const ITEMS: { a: string; Ico: LucideIcon; txt: string; roles: Rol[] }[] = [
+  { a: "/", Ico: LayoutDashboard, txt: "Panel", roles: ["admin", "rrpp", "staff"] },
+  { a: "/eventos", Ico: CalendarDays, txt: "Eventos", roles: ["admin"] },
+  { a: "/ordenes", Ico: Wallet, txt: "Órdenes", roles: ["admin"] },
+  { a: "/escaner", Ico: ScanQrCode, txt: "Escáner", roles: ["admin", "staff"] },
+  { a: "/tickets", Ico: Ticket, txt: "Tickets", roles: ["admin", "rrpp", "staff"] },
 ];
 
 function Protegido({ roles }: { roles?: Rol[] }) {
@@ -38,7 +39,7 @@ function Protegido({ roles }: { roles?: Rol[] }) {
       <nav className="nav">
         {ITEMS.filter((i) => i.roles.includes(usuario.rol)).map((i) => (
           <NavLink key={i.a} to={i.a} end={i.a === "/"} className={({ isActive }) => (isActive ? "activo" : "")}>
-            <span className="ico">{i.ico}</span>{i.txt}
+            <i.Ico className="ico" size={24} strokeWidth={1.8} aria-hidden="true" />{i.txt}
           </NavLink>
         ))}
       </nav>

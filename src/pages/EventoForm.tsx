@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Plus } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api, msgError } from "../api";
 import { aInputFecha, dinero, deInputFecha } from "../format";
@@ -151,7 +152,7 @@ export default function EventoForm() {
               </div>
               <label htmlFor="tcat">Categoría</label>
               <select id="tcat" name="categoria" defaultValue="venta">{Object.entries(CATEGORIAS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
-              <p><button className="sec">＋ Agregar tipo</button></p>
+              <p><button className="sec"><Plus size={16} /> Agregar tipo</button></p>
             </form>
           </div>
 

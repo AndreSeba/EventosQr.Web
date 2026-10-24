@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Plus } from "lucide-react";
 import { api, msgError } from "../api";
 import SelectorEvento from "../components/SelectorEvento";
 import { dinero } from "../format";
@@ -71,7 +72,7 @@ export default function Panel() {
           )}
           <h2 style={{ marginTop: 18 }}>Acciones rápidas</h2>
           <div className="acciones">
-            {(admin || usuario?.rol === "rrpp") && <Link className="btn" to="/tickets?nuevo=1">＋ Nuevo ticket</Link>}
+            {(admin || usuario?.rol === "rrpp") && <Link className="btn" to="/tickets?nuevo=1"><Plus size={18} /> Nuevo ticket</Link>}
             {admin && <Link className="btn sec" to="/ordenes">Revisar órdenes</Link>}
             {usuario?.rol !== "rrpp" && <Link className="btn sec" to="/escaner">Escanear</Link>}
             {admin && <Link className="btn sec" to="/usuarios">Gestionar equipo</Link>}

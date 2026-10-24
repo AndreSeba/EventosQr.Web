@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Check, ExternalLink, Mail, TriangleAlert } from "lucide-react";
 import { api, msgError } from "../api";
 import SelectorEvento from "../components/SelectorEvento";
 import { dinero, fechaHora } from "../format";
@@ -57,11 +58,11 @@ export default function Ordenes() {
             {o.email} · {o.telefono}<br />
             {o.cantidad} × {o.tipo} · <b>{evento && dinero(o.monto, evento.moneda)}</b> · {fechaHora(o.creadaEn)}
           </div>
-          <button className="mini sec" onClick={() => verComprobante(o)}>Ver comprobante ↗</button>
+          <button className="mini sec" onClick={() => verComprobante(o)}>Ver comprobante <ExternalLink size={13} /></button>
           {o.estado === "Pendiente" && (
             <>
               <div className="fila" style={{ marginTop: 10 }}>
-                <button disabled={trabajando === o.id} onClick={() => accion(o, "aprobar")}>✅ Aprobar y enviar</button>
+                <button disabled={trabajando === o.id} onClick={() => accion(o, "aprobar")}><Check size={17} /> Aprobar y enviar</button>
               </div>
               <details style={{ marginTop: 8 }}>
                 <summary style={{ cursor: "pointer", color: "var(--acento2)" }}>Rechazar…</summary>
@@ -76,8 +77,8 @@ export default function Ordenes() {
           {o.estado === "Rechazada" && <p className="suave chico">Motivo: {o.motivoRechazo}</p>}
           {o.estado !== "Pendiente" && (
             <div className="fila" style={{ marginTop: 10 }}>
-              <button className="mini sec" disabled={trabajando === o.id} onClick={() => accion(o, "reenviar")}>✉ Reenviar correo</button>
-              <span className="suave chico">{o.correoError ? `⚠ Falló: ${o.correoError}` : o.correoEnviadoEn ? `Enviado ${fechaHora(o.correoEnviadoEn)}` : "Sin enviar"}</span>
+              <button className="mini sec" disabled={trabajando === o.id} onClick={() => accion(o, "reenviar")}><Mail size={14} /> Reenviar correo</button>
+              <span className="suave chico">{o.correoError ? <><TriangleAlert size={13} style={{ verticalAlign: "-2px" }} /> Falló: {o.correoError}</> : o.correoEnviadoEn ? `Enviado ${fechaHora(o.correoEnviadoEn)}` : "Sin enviar"}</span>
             </div>
           )}
         </article>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { Mail, Plus } from "lucide-react";
 import { api, msgError } from "../api";
 import SelectorEvento from "../components/SelectorEvento";
 import { fechaHora } from "../format";
@@ -61,7 +62,7 @@ export default function Tickets() {
     <>
       <div className="fila entre">
         <h1>Lista de invitados</h1>
-        {puedeEmitir && evento && <button className="mini" onClick={() => setAbierto(!abierto)}>{abierto ? "Cerrar" : "＋ Nuevo ticket"}</button>}
+        {puedeEmitir && evento && <button className="mini" onClick={() => setAbierto(!abierto)}>{abierto ? "Cerrar" : <><Plus size={14} /> Nuevo ticket</>}</button>}
       </div>
       <SelectorEvento />
 
@@ -103,7 +104,7 @@ export default function Tickets() {
           </div>
           {en.estado === "valida" && puedeEmitir && (
             <div className="fila" style={{ marginTop: 8 }}>
-              <button className="mini sec" onClick={() => reenviar(en)}>✉ Reenviar</button>
+              <button className="mini sec" onClick={() => reenviar(en)}><Mail size={14} /> Reenviar</button>
               {admin && <button className="mini mal" onClick={() => anular(en)}>Anular</button>}
             </div>
           )}
