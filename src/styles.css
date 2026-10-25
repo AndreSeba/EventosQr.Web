@@ -100,3 +100,24 @@ button svg, .btn svg { vertical-align: -3px; margin-right: 4px; flex: none; }
 .tipo .precio { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2; }
 .tipo .preventa { font-size: .62rem; letter-spacing: .08em; background: var(--acento2); color: #000; padding: 1px 6px; border-radius: 4px; margin-bottom: 2px; }
 .tipo .regular { font-weight: 400; font-size: .8rem; color: #9a9a9a; }
+/* Compra: casilla de privacidad, dudas rápidas y barra fija con el total */
+label.acepto { display: flex; gap: 10px; align-items: flex-start; margin: 16px 0 4px; font-size: .85rem; color: var(--texto); cursor: pointer; }
+label.acepto input { margin-top: 3px; }
+.dudas details { border-bottom: 1px solid var(--borde); padding: 10px 0; }
+.dudas summary { cursor: pointer; font-weight: 600; }
+.dudas details p { color: var(--suave); margin: 8px 0 0; }
+.publica.con-barra { padding-bottom: 96px; }
+.barra-compra { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; gap: 10px; align-items: center; justify-content: center;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: rgba(5,5,5,.94); border-top: 1px solid var(--borde);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.barra-compra span { color: var(--suave); font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.barra-compra b { margin-left: auto; white-space: nowrap; }
+@media (min-width: 600px) { .barra-compra b { margin-left: 0; } }
+/* Link de la orden: cada QR sobre blanco para que la cámara lo lea bien */
+.entrada-qr { text-align: center; background: #fff; color: #000; border-radius: 12px; padding: 12px; margin: 12px 0; }
+.entrada-qr img { display: block; width: 100%; max-width: 280px; margin: 8px auto 0; }
+.btn.mini { padding: 7px 11px; font-size: .82rem; }
+.tabla { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: .9rem; }
+.tabla th, .tabla td { text-align: left; padding: 7px 6px; border-bottom: 1px solid var(--borde); }
+.tabla th { color: var(--suave); font-weight: 600; font-size: .78rem; }
+code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; font-size: .85em; word-break: break-all; }

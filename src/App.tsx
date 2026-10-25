@@ -4,6 +4,8 @@ import { useSesion } from "./session";
 import { ETIQUETA_ROL } from "./roles";
 import type { Rol } from "./types";
 import Compra from "./pages/Compra";
+import Orden from "./pages/Orden";
+import MisEntradas from "./pages/MisEntradas";
 import Login from "./pages/Login";
 import Panel from "./pages/Panel";
 import Eventos from "./pages/Eventos";
@@ -54,6 +56,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/e/:slug" element={<Compra />} />
+      <Route path="/o/:acceso" element={<Orden />} />
+      <Route path="/mis-entradas" element={<MisEntradas />} />
       <Route path="/login" element={<Login />} />
       <Route element={<Protegido />}>
         <Route path="/" element={<Panel />} />
