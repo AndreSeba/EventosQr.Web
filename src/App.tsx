@@ -1,6 +1,7 @@
 import { Navigate, NavLink, Outlet, Route, Routes, useLocation } from "react-router-dom";
-import { CalendarDays, LayoutDashboard, ScanQrCode, Ticket, Wallet, type LucideIcon } from "lucide-react";
+import { Building2, CalendarDays, LayoutDashboard, ScanQrCode, Ticket, Wallet, type LucideIcon } from "lucide-react";
 import { useSesion } from "./session";
+import { ETIQUETA_ROL } from "./roles";
 import type { Rol } from "./types";
 import Compra from "./pages/Compra";
 import Login from "./pages/Login";
@@ -12,13 +13,15 @@ import Tickets from "./pages/Tickets";
 import Escaner from "./pages/Escaner";
 import Usuarios from "./pages/Usuarios";
 import Perfil from "./pages/Perfil";
+import Organizaciones from "./pages/Organizaciones";
 
 const ITEMS: { a: string; Ico: LucideIcon; txt: string; roles: Rol[] }[] = [
-  { a: "/", Ico: LayoutDashboard, txt: "Panel", roles: ["admin", "rrpp", "staff"] },
-  { a: "/eventos", Ico: CalendarDays, txt: "Eventos", roles: ["admin"] },
-  { a: "/ordenes", Ico: Wallet, txt: "Órdenes", roles: ["admin"] },
-  { a: "/escaner", Ico: ScanQrCode, txt: "Escáner", roles: ["admin", "staff"] },
-  { a: "/tickets", Ico: Ticket, txt: "Tickets", roles: ["admin", "rrpp", "staff"] },
+  { a: "/", Ico: LayoutDashboard, txt: "Panel", roles: ["superadmin", "admin", "rrpp", "staff"] },
+  { a: "/eventos", Ico: CalendarDays, txt: "Eventos", roles: ["superadmin", "admin"] },
+  { a: "/ordenes", Ico: Wallet, txt: "Órdenes", roles: ["superadmin", "admin"] },
+  { a: "/escaner", Ico: ScanQrCode, txt: "Escáner", roles: ["superadmin", "admin", "staff"] },
+  { a: "/tickets", Ico: Ticket, txt: "Tickets", roles: ["superadmin", "admin", "rrpp", "staff"] },
+  { a: "/organizaciones", Ico: Building2, txt: "Clientes", roles: ["superadmin"] },
 ];
 
 function Protegido({ roles }: { roles?: Rol[] }) {
@@ -32,7 +35,7 @@ function Protegido({ roles }: { roles?: Rol[] }) {
       <div className="pagina">
         <div className="barra">
           <span className="marca">EVENTOSQR</span>
-          <NavLink to="/perfil" className="suave chico">{usuario.nombre} · {usuario.rol}</NavLink>
+          <NavLink to="/perfil" className="suave chico">{usuario.orgNombre ? `${usuario.orgNombre} · ` : ""}{usuario.nombre} · {ETIQUETA_ROL[usuario.rol]}</NavLink>
         </div>
         <Outlet />
       </div>
@@ -57,14 +60,17 @@ export default function App() {
         <Route path="/tickets" element={<Tickets />} />
         <Route path="/perfil" element={<Perfil />} />
       </Route>
-      <Route element={<Protegido roles={["admin"]} />}>
+      <Route element={<Protegido roles={["superadmin", "admin"]} />}>
         <Route path="/eventos" element={<Eventos />} />
         <Route path="/eventos/:id" element={<EventoForm />} />
         <Route path="/ordenes" element={<Ordenes />} />
         <Route path="/usuarios" element={<Usuarios />} />
       </Route>
-      <Route element={<Protegido roles={["admin", "staff"]} />}>
+      <Route element={<Protegido roles={["superadmin", "admin", "staff"]} />}>
         <Route path="/escaner" element={<Escaner />} />
+      </Route>
+      <Route element={<Protegido roles={["superadmin"]} />}>
+        <Route path="/organizaciones" element={<Organizaciones />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

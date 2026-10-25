@@ -36,7 +36,7 @@ export default function Eventos() {
       {lista?.length === 0 && <div className="vacio">{archivados ? "No hay eventos archivados." : "Todavía no hay eventos."}</div>}
       {lista?.map((e) => (
         <div key={e.id} className="card">
-          <strong>{e.nombre}</strong>
+          <strong>{e.nombre}</strong>{e.organizacion && <span className="badge b-usada" style={{ marginLeft: 8 }}>{e.organizacion}</span>}
           <div className="suave chico">{fechaHora(e.fechaInicio)}{e.lugar && ` · ${e.lugar}`}</div>
           <div className="fila" style={{ marginTop: 10 }}>
             <Link className="btn mini" to={`/eventos/${e.id}`}>Editar</Link>

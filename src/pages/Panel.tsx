@@ -5,6 +5,7 @@ import { api, msgError } from "../api";
 import SelectorEvento from "../components/SelectorEvento";
 import { dinero } from "../format";
 import { useSesion } from "../session";
+import { esAdmin } from "../roles";
 import type { Resumen } from "../types";
 
 export default function Panel() {
@@ -12,7 +13,7 @@ export default function Panel() {
   const [r, setR] = useState<Resumen | null>(null);
   const [error, setError] = useState("");
   const [copiado, setCopiado] = useState(false);
-  const admin = usuario?.rol === "admin";
+  const admin = esAdmin(usuario);
 
   useEffect(() => {
     setR(null);
@@ -76,6 +77,7 @@ export default function Panel() {
             {admin && <Link className="btn sec" to="/ordenes">Revisar órdenes</Link>}
             {usuario?.rol !== "rrpp" && <Link className="btn sec" to="/escaner">Escanear</Link>}
             {admin && <Link className="btn sec" to="/usuarios">Gestionar equipo</Link>}
+            {usuario?.rol === "superadmin" && <Link className="btn sec" to="/organizaciones">Clientes</Link>}
           </div>
         </>
       )}

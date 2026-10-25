@@ -5,6 +5,7 @@ import { api, msgError } from "../api";
 import SelectorEvento from "../components/SelectorEvento";
 import { fechaHora } from "../format";
 import { useSesion } from "../session";
+import { esAdmin } from "../roles";
 import type { Entrada, EventoDetalle } from "../types";
 
 const FILTROS = [["", "Todos"], ["valida", "Válido"], ["usada", "Usado"], ["anulada", "Anulado"]] as const;
@@ -18,8 +19,8 @@ export default function Tickets() {
   const [detalle, setDetalle] = useState<EventoDetalle | null>(null);
   const [abierto, setAbierto] = useState(params.get("nuevo") === "1");
   const [msg, setMsg] = useState<{ ok: boolean; t: string } | null>(null);
-  const puedeEmitir = usuario?.rol === "admin" || usuario?.rol === "rrpp";
-  const admin = usuario?.rol === "admin";
+  const puedeEmitir = esAdmin(usuario) || usuario?.rol === "rrpp";
+  const admin = esAdmin(usuario);
 
   const cargar = () => {
     if (!evento) return;

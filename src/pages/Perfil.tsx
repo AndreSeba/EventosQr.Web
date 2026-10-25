@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { api, msgError } from "../api";
 import { useSesion } from "../session";
+import { ETIQUETA_ROL, esAdmin } from "../roles";
 
 export default function Perfil() {
   const { usuario, salir } = useSesion();
@@ -25,8 +26,10 @@ export default function Perfil() {
       <h1>Perfil</h1>
       <div className="card">
         <strong>{usuario?.nombre}</strong>
-        <div className="suave">{usuario?.email} · {usuario?.rol}</div>
-        {usuario?.rol === "admin" && <p><Link to="/usuarios">Gestionar equipo <ChevronRight size={14} style={{ verticalAlign: "-2px" }} /></Link></p>}
+        <div className="suave">{usuario?.email} · {usuario ? ETIQUETA_ROL[usuario.rol] : ""}</div>
+        {usuario?.orgNombre && <div className="suave chico">Organización: {usuario.orgNombre}</div>}
+        {esAdmin(usuario) && <p><Link to="/usuarios">Gestionar equipo <ChevronRight size={14} style={{ verticalAlign: "-2px" }} /></Link></p>}
+        {usuario?.rol === "superadmin" && <p><Link to="/organizaciones">Clientes (organizaciones) <ChevronRight size={14} style={{ verticalAlign: "-2px" }} /></Link></p>}
       </div>
       <form className="card" onSubmit={cambiar}>
         <h2>Cambiar contraseña</h2>

@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { api, msgError } from "../api";
 import { aInputFecha, dinero, deInputFecha } from "../format";
 import { useSesion } from "../session";
-import type { EventoDetalle, Evento, Tipo, UsuarioFila } from "../types";
+import type { EventoDetalle, Evento, Organizacion, Tipo, UsuarioFila } from "../types";
 
 const MONEDAS = ["BOB", "USD", "PEN", "ARS", "CLP", "BRL", "EUR"];
 const CATEGORIAS = { venta: "Venta (se compra en el link)", invitacion: "Invitación (solo emisión manual)", vip: "Lista VIP (solo emisión manual)" } as const;
@@ -13,7 +13,8 @@ export default function EventoForm() {
   const { id } = useParams();
   const nuevo = id === "nuevo";
   const nav = useNavigate();
-  const { recargarEventos, elegirEvento } = useSesion();
+  const { usuario, recargarEventos, elegirEvento } = useSesion();
+  const [orgs, setOrgs] = useState<Organizacion[]>([]); // solo el superadmin elige en qué cliente se crea el evento
   const [ev, setEv] = useState<EventoDetalle | null>(null);
   const [usuarios, setUsuarios] = useState<UsuarioFila[]>([]);
   const [msg, setMsg] = useState<{ ok: boolean; t: string } | null>(null);
@@ -23,6 +24,7 @@ export default function EventoForm() {
   useEffect(() => {
     if (!nuevo) cargar();
     api<UsuarioFila[]>("/usuarios").then(setUsuarios).catch(() => {});
+    if (nuevo && usuario?.rol === "superadmin") api<Organizacion[]>("/organizaciones").then((l) => setOrgs(l.filter((o) => o.activa))).catch(() => {});
   }, [id]);
 
   async function guardar(e: React.FormEvent<HTMLFormElement>) {
@@ -31,6 +33,7 @@ export default function EventoForm() {
     const body = {
       nombre: f.get("nombre"), descripcion: f.get("descripcion"), lugar: f.get("lugar"), direccionUrl: f.get("direccionUrl"),
       fechaInicio: deInputFecha(String(f.get("fechaInicio"))), moneda: f.get("moneda"),
+      ...(nuevo && usuario?.rol === "superadmin" ? { orgId: f.get("orgId") } : {}),
     };
     setGuardando(true);
     setMsg(null);
@@ -92,6 +95,15 @@ export default function EventoForm() {
       {msg && <div className={`msg ${msg.ok ? "ok" : "err"}`}>{msg.t}</div>}
 
       <form className="card" onSubmit={guardar}>
+        {nuevo && usuario?.rol === "superadmin" && (
+          <>
+            <label htmlFor="orgId">Cliente (organización)</label>
+            <select id="orgId" name="orgId" required defaultValue="">
+              <option value="" disabled>Elegí el cliente…</option>
+              {orgs.map((o) => <option key={o.id} value={o.id}>{o.nombre}</option>)}
+            </select>
+          </>
+        )}
         <label htmlFor="nombre">Nombre del evento</label>
         <input id="nombre" name="nombre" required minLength={2} maxLength={120} defaultValue={ev?.nombre} />
         <label htmlFor="descripcion">Descripción (opcional)</label>
@@ -159,8 +171,9 @@ export default function EventoForm() {
           <div className="card">
             <h2>Equipo del evento</h2>
             <p className="suave chico">Quién puede escanear (staff) o emitir invitaciones (RRPP) en este evento. Los administradores acceden siempre.</p>
-            {usuarios.filter((u) => u.rol !== "admin" && u.activo).length === 0 && <p className="suave">Creá usuarios staff/RRPP en «Gestionar equipo».</p>}
-            {usuarios.filter((u) => u.rol !== "admin" && u.activo).map((u) => (
+            {/* solo gente de la misma organización del evento, que no sea administrador */}
+            {usuarios.filter((u) => u.orgId === ev.orgId && u.rol !== "admin" && u.rol !== "superadmin" && u.activo).length === 0 && <p className="suave">Creá usuarios staff/RRPP en «Gestionar equipo».</p>}
+            {usuarios.filter((u) => u.orgId === ev.orgId && u.rol !== "admin" && u.rol !== "superadmin" && u.activo).map((u) => (
               <label key={u.id} className="fila" style={{ margin: "6px 0", color: "var(--texto)", fontSize: "1rem" }}>
                 <input type="checkbox" checked={ev.equipoIds.includes(u.id)}
                   onChange={(e) => guardarEquipo(e.target.checked ? [...ev.equipoIds, u.id] : ev.equipoIds.filter((x) => x !== u.id))} />
