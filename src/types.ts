@@ -4,7 +4,7 @@ export type Usuario = { id: string; email: string; nombre: string; rol: Rol; org
 export type UsuarioFila = Omit<Usuario, "orgNombre"> & { activo: boolean; creadoEn: string; organizacion: string | null };
 export type Organizacion = { id: string; nombre: string; slug: string; activa: boolean; creadaEn: string; eventos: number; usuarios: number };
 
-export type Tipo = { id: string; nombre: string; precio: number; cupo: number | null; categoria: "venta" | "invitacion" | "vip"; activo: boolean };
+export type Tipo = { id: string; nombre: string; precio: number; precioRegular: number | null; cupo: number | null; categoria: "venta" | "invitacion" | "vip"; activo: boolean };
 export type Evento = {
   id: string; orgId: string; organizacion: string | null; slug: string; nombre: string; descripcion: string | null; lugar: string | null; direccionUrl: string | null;
   fechaInicio: string; moneda: string; archivado: boolean; imagenUrl: string | null; qrPagoUrl: string | null; linkVenta: string;
@@ -30,7 +30,7 @@ export type Entrada = {
 export type EventoPublico = {
   slug: string; nombre: string; descripcion: string | null; lugar: string | null; direccionUrl: string | null; fechaInicio: string;
   moneda: string; imagenUrl: string | null; qrPagoUrl: string | null; maxPorOrden: number; maxComprobanteMb: number;
-  tipos: { id: string; nombre: string; precio: number; disponibles: number | null }[];
+  tipos: { id: string; nombre: string; precio: number; precioRegular: number | null; disponibles: number | null }[];
 };
 
 export type ResultadoEscaneo =
