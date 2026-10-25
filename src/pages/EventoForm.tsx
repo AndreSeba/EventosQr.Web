@@ -65,7 +65,7 @@ export default function EventoForm() {
     const form = e.currentTarget;
     const f = new FormData(form);
     try {
-      await api(`/eventos/${id}/tipos`, { body: { nombre: f.get("nombre"), precio: f.get("precio"), cupo: f.get("cupo") ? Number(f.get("cupo")) : null, categoria: f.get("categoria") } });
+      await api(`/eventos/${id}/tipos`, { body: { nombre: f.get("nombre"), precio: f.get("precio"), precioRegular: f.get("precioRegular"), cupo: f.get("cupo") ? Number(f.get("cupo")) : null, categoria: f.get("categoria") } });
       form.reset();
       await cargar();
     } catch (err) { setMsg({ ok: false, t: msgError(err) }); }
@@ -74,7 +74,7 @@ export default function EventoForm() {
   async function editarTipo(t: Tipo, cambios: Partial<Tipo>) {
     const n = { ...t, ...cambios };
     try {
-      await api(`/tipos/${t.id}`, { method: "PUT", body: { nombre: n.nombre, precio: n.precio, cupo: n.cupo, categoria: n.categoria, activo: n.activo } });
+      await api(`/tipos/${t.id}`, { method: "PUT", body: { nombre: n.nombre, precio: n.precio, precioRegular: n.precioRegular, cupo: n.cupo, categoria: n.categoria, activo: n.activo } });
       await cargar();
     } catch (err) { setMsg({ ok: false, t: msgError(err) }); }
   }
@@ -127,13 +127,17 @@ export default function EventoForm() {
               <div key={t.id} className="fila entre" style={{ padding: "8px 0", borderBottom: "1px solid var(--borde)" }}>
                 <div>
                   <strong>{t.nombre}</strong> <span className="badge b-usada">{t.categoria}</span>
-                  <div className="suave chico">{dinero(t.precio, ev.moneda)} · cupo {t.cupo ?? "sin límite"}{!t.activo && " · INACTIVO"}</div>
+                  <div className="suave chico">{dinero(t.precio, ev.moneda)}{t.precioRegular ? ` (preventa; luego ${dinero(t.precioRegular, ev.moneda)})` : ""} · cupo {t.cupo ?? "sin límite"}{!t.activo && " · INACTIVO"}</div>
                 </div>
                 <div className="fila">
                   <button className="mini sec" onClick={() => {
                     const p = prompt(`Nuevo precio de «${t.nombre}»`, String(t.precio));
                     if (p !== null && !Number.isNaN(Number(p))) editarTipo(t, { precio: Number(p) });
                   }}>Precio</button>
+                  <button className="mini sec" onClick={() => {
+                    const p = prompt(`Precio normal de «${t.nombre}» (lo que costará al terminar la preventa; vacío = sin preventa)`, t.precioRegular ? String(t.precioRegular) : "");
+                    if (p !== null && (p.trim() === "" || !Number.isNaN(Number(p)))) editarTipo(t, { precioRegular: p.trim() === "" ? null : Number(p) });
+                  }}>Preventa</button>
                   <button className="mini sec" onClick={() => {
                     const c = prompt("Cupo (vacío = sin límite)", t.cupo ? String(t.cupo) : "");
                     if (c !== null) editarTipo(t, { cupo: c.trim() ? Number(c) : null });
@@ -148,6 +152,7 @@ export default function EventoForm() {
               <input id="tn" name="nombre" required minLength={2} maxLength={60} />
               <div className="fila" style={{ alignItems: "flex-end" }}>
                 <div style={{ flex: 1 }}><label htmlFor="tp">Precio</label><input id="tp" name="precio" type="number" min={0} step="0.01" required defaultValue={0} /></div>
+                <div style={{ flex: 1 }}><label htmlFor="tpr">Precio normal (opcional)</label><input id="tpr" name="precioRegular" type="number" min={0} step="0.01" placeholder="si es preventa" /></div>
                 <div style={{ flex: 1 }}><label htmlFor="tc">Cupo (opcional)</label><input id="tc" name="cupo" type="number" min={1} /></div>
               </div>
               <label htmlFor="tcat">Categoría</label>

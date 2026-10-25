@@ -2,7 +2,7 @@ export type Rol = "admin" | "rrpp" | "staff";
 export type Usuario = { id: string; email: string; nombre: string; rol: Rol };
 export type UsuarioFila = Usuario & { activo: boolean; creadoEn: string };
 
-export type Tipo = { id: string; nombre: string; precio: number; cupo: number | null; categoria: "venta" | "invitacion" | "vip"; activo: boolean };
+export type Tipo = { id: string; nombre: string; precio: number; precioRegular: number | null; cupo: number | null; categoria: "venta" | "invitacion" | "vip"; activo: boolean };
 export type Evento = {
   id: string; slug: string; nombre: string; descripcion: string | null; lugar: string | null; direccionUrl: string | null;
   fechaInicio: string; moneda: string; archivado: boolean; imagenUrl: string | null; qrPagoUrl: string | null; linkVenta: string;
@@ -28,7 +28,7 @@ export type Entrada = {
 export type EventoPublico = {
   slug: string; nombre: string; descripcion: string | null; lugar: string | null; direccionUrl: string | null; fechaInicio: string;
   moneda: string; imagenUrl: string | null; qrPagoUrl: string | null; maxPorOrden: number; maxComprobanteMb: number;
-  tipos: { id: string; nombre: string; precio: number; disponibles: number | null }[];
+  tipos: { id: string; nombre: string; precio: number; precioRegular: number | null; disponibles: number | null }[];
 };
 
 export type ResultadoEscaneo =

@@ -72,7 +72,11 @@ export default function Compra() {
             <label key={t.id} className={`tipo ${tipoId === t.id ? "sel" : ""} ${agotado ? "off" : ""}`} style={{ margin: "8px 0", color: "inherit", fontSize: "1rem" }}>
               <input type="radio" name="tipo" disabled={agotado} checked={tipoId === t.id} onChange={() => setTipoId(t.id)} />
               <span>{t.nombre}{agotado && " · AGOTADO"}{!agotado && t.disponibles !== null && t.disponibles <= 20 && <span className="suave chico"> · quedan {t.disponibles}</span>}</span>
-              <span className="precio">{dinero(t.precio, ev.moneda)}</span>
+              <span className="precio">
+                {t.precioRegular && <span className="preventa">PREVENTA</span>}
+                {t.precioRegular && <s className="regular">{dinero(t.precioRegular, ev.moneda)}</s>}
+                {dinero(t.precio, ev.moneda)}
+              </span>
             </label>
           );
         })}
@@ -81,7 +85,7 @@ export default function Compra() {
       <section className="card">
         <h2>2. Pagá</h2>
         <p className="suave">
-          Escaneá este QR con tu app de pagos{elegido ? ` y pagá ${dinero(elegido.precio, ev.moneda)} por entrada` : ""}. Guardá el comprobante.
+          Escaneá este QR con tu app de pagos{elegido ? ` y pagá ${dinero(elegido.precio, ev.moneda)} por entrada${elegido.precioRegular ? " (precio de preventa)" : ""}` : ""}. Guardá el comprobante.
         </p>
         {ev.qrPagoUrl ? <img className="qrpago" src={ev.qrPagoUrl} alt="QR de pago" /> : <p className="suave">El QR de pago aún no está disponible.</p>}
       </section>
