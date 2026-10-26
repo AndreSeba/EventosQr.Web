@@ -5,7 +5,8 @@ import { api, msgError } from "../api";
 import { agregarAlCalendario, compartir, linkWhatsapp } from "../compartir";
 import { datosGuardados, guardarDatos, refDelLink } from "../comprador";
 import { sugerirCorreo } from "../correo";
-import { dinero, fechaLarga } from "../format";
+import PiePublico from "../components/PiePublico";
+import { dinero, fechaCorta, hora } from "../format";
 import { comprimirImagen } from "../imagen";
 import type { EventoPublico } from "../types";
 
@@ -79,6 +80,7 @@ export default function Compra() {
 
   const elegido = ev.tipos.find((t) => t.id === tipoId);
   const total = elegido ? elegido.precio * cantidad : 0;
+  const paso = elegido ? 2 : 1;
   const sugerido = sugerirCorreo(email);
   const correosIguales = email.trim().toLowerCase() === email2.trim().toLowerCase();
 
@@ -86,47 +88,67 @@ export default function Compra() {
     <main className={`publica${ev.imagenUrl ? " con-fondo" : ""}${elegido ? " con-barra" : ""}`}>
       {/* La imagen del evento va de fondo de toda la página, con una capa oscura para que el texto se lea */}
       {ev.imagenUrl && <div className="fondo-evento" style={{ backgroundImage: `url("${ev.imagenUrl}")` }} aria-hidden="true" />}
-      <h1>{ev.nombre}</h1>
-      <p className="suave">
-        {fechaLarga(ev.fechaInicio)}
-        {ev.lugar && ` · ${ev.lugar}`}
-        {ev.edadMinima && <><br />Mayores de {ev.edadMinima}: en la puerta pueden pedirte el carnet.</>}
-      </p>
-      <div className="fila">
-        <button className="mini sec" onClick={async () => { const r = await compartir(ev.nombre, urlEvento); if (r === "copiado") avisar("Link del evento copiado."); }}>
-          <Share2 size={14} /> Compartir evento
-        </button>
-        <button className="mini sec" onClick={() => agregarAlCalendario(ev, urlEvento)}><CalendarPlus size={14} /> Agregar al calendario</button>
-        {ev.direccionUrl && <a className="btn sec mini" href={ev.direccionUrl} target="_blank" rel="noreferrer"><MapPin size={14} /> Cómo llegar</a>}
-      </div>
-      {aviso && <p className="suave chico" role="status">{aviso}</p>}
+      <header className={`portada${ev.imagenUrl ? " con-afiche" : ""}`}>
+        <div>
+          <p className="ceja">{ev.lugar ?? "Entradas"}</p>
+          <h1 className="titulo-evento">{ev.nombre}</h1>
+          <ul className="datos">
+            <li><span>Fecha</span><b>{fechaCorta(ev.fechaInicio)}</b></li>
+            <li><span>Hora</span><b>{hora(ev.fechaInicio)}</b></li>
+            {ev.edadMinima && <li><span>Edad mínima</span><b>{ev.edadMinima}</b></li>}
+            <li><span>Pago</span><b>QR</b></li>
+          </ul>
+          <div className="fila">
+            <button className="mini sec" onClick={async () => { const r = await compartir(ev.nombre, urlEvento); if (r === "copiado") avisar("Link del evento copiado."); }}>
+              <Share2 size={14} /> Compartir evento
+            </button>
+            <button className="mini sec" onClick={() => agregarAlCalendario(ev, urlEvento)}><CalendarPlus size={14} /> Agregar al calendario</button>
+          </div>
+          {aviso && <p className="suave chico" role="status">{aviso}</p>}
+        </div>
+        {ev.imagenUrl && <img className="afiche" src={ev.imagenUrl} alt={`Afiche de ${ev.nombre}`} />}
+      </header>
       {ev.descripcion && <p>{ev.descripcion}</p>}
+      {ev.edadMinima && <p className="suave chico">Mayores de {ev.edadMinima}: en la puerta pueden pedirte el carnet.</p>}
+
+      <ol className="pasos" aria-label="Pasos de la compra">
+        {["Entradas", "Pago", "Comprobante", "Tu entrada"].map((t, i) => (
+          <li key={t} className={i + 1 < paso ? "hecho" : i + 1 === paso ? "actual" : ""}><span className="n">{i + 1}</span>{t}</li>
+        ))}
+      </ol>
 
       <section className="card">
-        <h2>1. Elegí tu ticket</h2>
-        {ev.tipos.length === 0 && <p className="suave">No hay tickets a la venta por ahora.</p>}
+        <h2>1. Elegí tu entrada</h2>
+        {ev.tipos.length === 0 && <p className="suave">No hay entradas a la venta por ahora.</p>}
         {ev.tipos.map((t) => {
           const agotado = t.disponibles !== null && t.disponibles <= 0;
+          const max = Math.min(ev.maxPorOrden, t.disponibles ?? Infinity);
           return (
             <label key={t.id} className={`tipo ${tipoId === t.id ? "sel" : ""} ${agotado ? "off" : ""}`} style={{ margin: "8px 0", color: "inherit", fontSize: "1rem" }}>
-              <input type="radio" name="tipo" disabled={agotado} checked={tipoId === t.id} onChange={() => setTipoId(t.id)} />
-              <span>{t.nombre}{agotado && " · AGOTADO"}{!agotado && t.disponibles !== null && t.disponibles <= 20 && <span className="suave chico"> · quedan {t.disponibles}</span>}</span>
+              <input type="radio" name="tipo" disabled={agotado} checked={tipoId === t.id}
+                onChange={() => { setTipoId(t.id); setCantidad((c) => Math.max(1, Math.min(c, max))); }} />
+              <span>
+                <span className="nombre-tipo">{t.nombre}</span>
+                {agotado && <span className="suave chico"> · AGOTADO</span>}
+                {!agotado && t.disponibles !== null && t.disponibles <= 20 && <span className="suave chico"> · quedan {t.disponibles}</span>}
+              </span>
               <span className="precio">
                 {t.precioRegular && <span className="preventa">PREVENTA</span>}
                 {t.precioRegular && <s className="regular">{dinero(t.precioRegular, ev.moneda)}</s>}
                 {dinero(t.precio, ev.moneda)}
               </span>
+              {tipoId === t.id && (
+                // preventDefault: que tocar − / + no vuelva a activar el label
+                <div className="cantidad" onClick={(e) => e.preventDefault()}>
+                  <span className="suave">CANTIDAD</span>
+                  <button type="button" className="sec" aria-label="Una entrada menos" disabled={cantidad <= 1} onClick={() => setCantidad((c) => c - 1)}>−</button>
+                  <output aria-live="polite" aria-label="Cantidad de entradas">{cantidad}</output>
+                  <button type="button" className="sec" aria-label="Una entrada más" disabled={cantidad >= max} onClick={() => setCantidad((c) => c + 1)}>+</button>
+                </div>
+              )}
             </label>
           );
         })}
-        {ev.tipos.length > 0 && (
-          <>
-            <label htmlFor="cantidad">Cantidad de entradas</label>
-            <select id="cantidad" value={cantidad} onChange={(e) => setCantidad(Number(e.target.value))}>
-              {Array.from({ length: ev.maxPorOrden }, (_, i) => <option key={i + 1} value={i + 1}>{i + 1}</option>)}
-            </select>
-          </>
-        )}
       </section>
 
       <section className="card">
@@ -174,6 +196,14 @@ export default function Compra() {
         </form>
       </section>
 
+      {(ev.lugar || ev.direccionUrl) && (
+        <section className="card">
+          <h2>Ubicación</h2>
+          {ev.lugar && <p style={{ margin: "0 0 10px" }}>{ev.lugar}</p>}
+          {ev.direccionUrl && <a className="btn sec mini" href={ev.direccionUrl} target="_blank" rel="noreferrer"><MapPin size={14} /> Cómo llegar</a>}
+        </section>
+      )}
+
       <section className="card dudas">
         <h2>Dudas rápidas</h2>
         <details>
@@ -197,8 +227,9 @@ export default function Compra() {
             <MessageCircle size={16} /> Escribinos por WhatsApp
           </a></p>
         )}
-        <p className="suave chico"><Link to="/mis-entradas">Mis entradas</Link></p>
       </section>
+
+      <PiePublico />
 
       {/* Barra fija abajo (sobre todo en el celular): qué elegiste, cuánto pagar y un atajo al paso 3 */}
       {elegido && (

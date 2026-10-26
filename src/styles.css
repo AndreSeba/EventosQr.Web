@@ -64,16 +64,14 @@ button.mini { padding: 7px 11px; font-size: .82rem; }
 .vacio { text-align: center; padding: 28px 12px; border: 2px dashed var(--borde); border-radius: 14px; color: var(--suave); }
 .oculto { position: absolute; left: -9999px; width: 1px; height: 1px; }
 
-/* Página de compra con la imagen del evento de fondo */
-.fondo-evento { position: fixed; inset: 0; z-index: -1; background-size: cover; background-position: center 48%; background-repeat: no-repeat; }
-.fondo-evento::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.22) 0%, rgba(0,0,0,.12) 40%, rgba(0,0,0,.7) 72%, rgba(0,0,0,.9) 100%); }
-.publica.con-fondo { position: relative; z-index: 1; padding-top: 56vh; } /* deja a la vista el arte (título) del evento antes del formulario */
-.publica.con-fondo h1 { text-shadow: 0 2px 16px rgba(0,0,0,.9); }
-.publica.con-fondo > p, .publica.con-fondo .suave { text-shadow: 0 1px 8px rgba(0,0,0,.9); }
-.publica.con-fondo .card { background: rgba(10,10,10,.72); border-color: rgba(255,255,255,.16); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
-.publica.con-fondo input, .publica.con-fondo select { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.22); }
+/* Página de compra: la imagen del evento, borrosa y oscura, de fondo; el afiche nítido va en la portada */
+.fondo-evento { position: fixed; inset: -40px; z-index: -1; background-size: cover; background-position: center; background-repeat: no-repeat;
+  filter: blur(32px) saturate(1.2); transform: scale(1.1); opacity: .5; }
+.fondo-evento::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,.85) 55%, #000 100%); }
+.publica.con-fondo .card { background: rgba(10,10,10,.78); border-color: rgba(255,255,255,.14); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.publica.con-fondo input, .publica.con-fondo select { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.2); }
 .publica.con-fondo .tipo { background: rgba(0,0,0,.35); }
-.publica.con-fondo .tipo.sel { background: rgba(255,255,255,.14); border-color: #fff; }
+.publica.con-fondo .tipo.sel { background: rgba(255,255,255,.12); border-color: #fff; }
 /* Iconos (lucide) en botones y barra inferior */
 button svg, .btn svg { vertical-align: -3px; margin-right: 4px; flex: none; }
 .nav a { display: flex; flex-direction: column; align-items: center; gap: 3px; }
@@ -113,11 +111,80 @@ label.acepto input { margin-top: 3px; }
 .barra-compra span { color: var(--suave); font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .barra-compra b { margin-left: auto; white-space: nowrap; }
 @media (min-width: 600px) { .barra-compra b { margin-left: 0; } }
-/* Link de la orden: cada QR sobre blanco para que la cámara lo lea bien */
-.entrada-qr { text-align: center; background: #fff; color: #000; border-radius: 12px; padding: 12px; margin: 12px 0; }
-.entrada-qr img { display: block; width: 100%; max-width: 280px; margin: 8px auto 0; }
 .btn.mini { padding: 7px 11px; font-size: .82rem; }
 .tabla { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: .9rem; }
 .tabla th, .tabla td { text-align: left; padding: 7px 6px; border-bottom: 1px solid var(--borde); }
 .tabla th { color: var(--suave); font-weight: 600; font-size: .78rem; }
 code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; font-size: .85em; word-break: break-all; }
+
+/* ============ Personalidad de las páginas públicas (compra, orden, organizadores) ============ */
+:root { --display: "Anton", "Arial Narrow", Impact, sans-serif; --mono: "JetBrains Mono", ui-monospace, Consolas, monospace; }
+.publica { max-width: 640px; }
+.publica h1, .publica h2, .titulo-evento { font-family: var(--display); font-weight: 400; letter-spacing: .01em; text-transform: uppercase; }
+.publica h2 { font-size: 1.35rem; letter-spacing: .03em; }
+.ceja { font-family: var(--mono); font-size: .72rem; letter-spacing: .22em; text-transform: uppercase; color: var(--acento2); margin: 0 0 8px;
+  display: flex; align-items: center; gap: 10px; }
+.ceja::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,.45), transparent); }
+.mono { font-family: var(--mono); }
+
+/* Portada: título enorme + afiche */
+.portada { display: grid; gap: 18px; align-items: end; margin: 8px 0 18px; }
+.portada.con-afiche { grid-template-columns: 1fr; }
+.titulo-evento { font-size: clamp(2.6rem, 11vw, 4.6rem); line-height: .92; margin: 0 0 14px; color: #fff; text-shadow: 0 4px 30px rgba(0,0,0,.6); word-break: break-word; }
+.afiche { width: 100%; max-width: 360px; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.7); border: 1px solid rgba(255,255,255,.12); justify-self: center; }
+@media (min-width: 620px) { .portada.con-afiche { grid-template-columns: 1fr 220px; } .afiche { max-width: 220px; transform: rotate(2deg); } }
+.datos { list-style: none; padding: 0; margin: 0 0 14px; display: flex; flex-wrap: wrap; gap: 6px 18px; font-family: var(--mono); font-size: .8rem; }
+.datos li span { color: var(--suave); margin-right: 6px; }
+.datos li b { color: #fff; font-weight: 600; }
+
+/* Pasos 1·2·3·4 */
+.pasos { list-style: none; padding: 0; margin: 14px 0 6px; display: flex; gap: 6px; overflow-x: auto; font-family: var(--mono); font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; }
+.pasos li { display: flex; align-items: center; gap: 6px; white-space: nowrap; color: var(--suave); padding: 6px 10px 6px 6px; border-radius: 999px; border: 1px solid transparent; }
+.pasos li .n { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 1px solid #555; font-size: .7rem; }
+.pasos li.actual { color: #000; background: #fff; }
+.pasos li.actual .n { border-color: #000; }
+.pasos li.hecho { color: #fff; }
+.pasos li.hecho .n { background: #fff; color: #000; border-color: #fff; }
+
+/* Tickets: tarjetas con cantidad − n + */
+.tipo { flex-wrap: wrap; }
+.tipo .nombre-tipo { font-family: var(--display); text-transform: uppercase; font-size: 1.25rem; letter-spacing: .02em; }
+.cantidad { display: flex; align-items: center; gap: 0; width: 100%; justify-content: flex-end; margin-top: 4px; }
+.cantidad button { width: 38px; height: 38px; padding: 0; border-radius: 8px; font-size: 1.2rem; line-height: 1; }
+.cantidad output { min-width: 44px; text-align: center; font-family: var(--mono); font-size: 1.05rem; font-weight: 600; }
+.cantidad .suave { margin-right: auto; font-family: var(--mono); font-size: .75rem; }
+
+/* Pie con la firma: también es publicidad */
+.pie-publico { margin: 34px 0 8px; padding-top: 18px; border-top: 1px solid var(--borde); display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between;
+  font-family: var(--mono); font-size: .75rem; color: var(--suave); }
+.pie-publico a { color: #fff; text-decoration: none; }
+.pie-publico .marca-pie { font-family: var(--display); font-size: 1rem; letter-spacing: .12em; color: #fff; }
+
+/* Entrada con forma de boleto: cabecera negra, línea troquelada, QR sobre blanco */
+.boleto { margin: 16px 0; border-radius: 16px; overflow: hidden; color: #000; filter: drop-shadow(0 12px 30px rgba(0,0,0,.6)); }
+.boleto-cabeza { background: #111; color: #fff; padding: 16px 18px 18px; border: 1px solid #2a2a2a; border-bottom: 0; border-radius: 16px 16px 0 0; }
+.boleto-cabeza .titulo { font-family: var(--display); text-transform: uppercase; font-size: 1.6rem; line-height: 1; margin: 2px 0 8px; }
+.boleto-cabeza .mono { font-size: .75rem; color: #bbb; }
+.boleto-corte { height: 22px; background:
+  radial-gradient(circle at 0 50%, transparent 11px, #fff 11.5px) left / 51% 100% no-repeat,
+  radial-gradient(circle at 100% 50%, transparent 11px, #fff 11.5px) right / 51% 100% no-repeat; position: relative; }
+.boleto-corte::after { content: ""; position: absolute; left: 18px; right: 18px; top: 50%; border-top: 2px dashed #cfcfcf; }
+.boleto-pie { background: #fff; padding: 6px 18px 18px; text-align: center; border-radius: 0 0 16px 16px; }
+.boleto-pie img { display: block; width: 100%; max-width: 260px; margin: 0 auto; }
+.boleto-pie .mono { font-size: .72rem; color: #555; letter-spacing: .08em; text-transform: uppercase; }
+.boleto.apagado { opacity: .55; }
+
+/* Página para organizadores */
+.org-hero h1 { font-size: clamp(2.6rem, 10vw, 4.4rem); line-height: .95; margin: 6px 0 14px; }
+.org-hero p { font-size: 1.08rem; color: #d6d6d6; }
+.rasgos { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 18px 0; }
+@media (min-width: 560px) { .rasgos { grid-template-columns: 1fr 1fr; } }
+.rasgo { background: var(--panel); border: 1px solid var(--borde); border-radius: 14px; padding: 14px; }
+.rasgo svg { margin-bottom: 6px; }
+.rasgo b { display: block; margin-bottom: 4px; }
+.rasgo p { margin: 0; color: var(--suave); font-size: .92rem; }
+.como { counter-reset: paso; list-style: none; padding: 0; }
+.como li { counter-increment: paso; display: flex; gap: 12px; align-items: flex-start; margin: 12px 0; }
+.como li::before { content: counter(paso); flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #fff; color: #000;
+  font-family: var(--display); font-size: 1.1rem; }
+.btn.grande { padding: 15px 22px; font-size: 1.05rem; }
