@@ -4,7 +4,9 @@ import { CalendarPlus, Copy, Download, MapPin, MessageCircle, Ticket } from "luc
 import { api, msgError } from "../api";
 import { agregarAlCalendario, copiar, linkWhatsapp } from "../compartir";
 import { guardarOrden } from "../comprador";
-import { dinero, fechaLarga } from "../format";
+import Pasos from "../components/Pasos";
+import PiePublico from "../components/PiePublico";
+import { dinero, fechaCorta, hora } from "../format";
 import type { OrdenPublica } from "../types";
 
 const ESTADO_ENTRADA = { valida: "", usada: "YA USADA", anulada: "ANULADA" } as const;
@@ -53,12 +55,17 @@ export default function Orden() {
   return (
     <main className="publica">
       {nueva && o.estado === "Pendiente" && <div className="msg ok" role="status">¡Recibido! <b>Guardá este link</b>: acá vas a ver tu entrada cuando se apruebe (también te llega al correo).</div>}
-      <p className="suave chico" style={{ margin: 0 }}>Orden #{o.numero}</p>
-      <h1>{ev.nombre}</h1>
-      <p className="suave">
-        {fechaLarga(ev.fechaInicio)}{ev.lugar && ` · ${ev.lugar}`}
-        {ev.edadMinima && <><br />Mayores de {ev.edadMinima}: en la puerta pueden pedirte el carnet.</>}
-      </p>
+      <p className="ceja">Orden #{o.numero}</p>
+      <h1 className="titulo-evento">{ev.nombre}</h1>
+      <ul className="datos">
+        <li><span>Fecha</span><b>{fechaCorta(ev.fechaInicio)}</b></li>
+        <li><span>Hora</span><b>{hora(ev.fechaInicio)}</b></li>
+        {ev.lugar && <li><span>Lugar</span><b>{ev.lugar}</b></li>}
+      </ul>
+      {ev.edadMinima && <p className="suave chico">Mayores de {ev.edadMinima}: en la puerta pueden pedirte el carnet.</p>}
+      {o.estado !== "Rechazada" && (
+        <Pasos actual={4} completo={o.estado === "Aprobada"} etiquetaActual={o.estado === "Pendiente" ? "Tu entrada · en revisión" : undefined} />
+      )}
 
       <section className="card">
         <div className="fila entre"><strong>{o.cantidad} × {o.tipo}</strong><span className={`badge b-${o.estado}`}>{o.estado}</span></div>
@@ -80,9 +87,18 @@ export default function Orden() {
           <h2>Tu entrada</h2>
           <p className="suave chico">Mostrá el QR en la puerta. <b>Cada QR entra una sola vez</b>: quien tenga este link o una captura puede usarlo.</p>
           {o.entradas.map((e, i) => (
-            <div key={i} className="entrada-qr">
-              <div className="chico">{e.tipo} · Entrada {i + 1} de {o.entradas.length} {ESTADO_ENTRADA[e.estado] && <span className={`badge b-${e.estado}`}>{ESTADO_ENTRADA[e.estado]}</span>}</div>
-              {e.qr ? <img src={e.qr} alt={`QR de la entrada ${i + 1}`} /> : <p className="suave">Esta entrada fue anulada.</p>}
+            <div key={i} className={`boleto${e.estado !== "valida" ? " apagado" : ""}`}>
+              <div className="boleto-cabeza">
+                <div className="mono">{e.tipo.toUpperCase()} · ENTRADA {i + 1} DE {o.entradas.length}</div>
+                <div className="titulo">{ev.nombre}</div>
+                <div className="mono">{fechaCorta(ev.fechaInicio)} · {hora(ev.fechaInicio)}{ev.lugar && ` · ${ev.lugar}`}</div>
+                {ESTADO_ENTRADA[e.estado] && <p style={{ margin: "10px 0 0" }}><span className={`badge b-${e.estado}`}>{ESTADO_ENTRADA[e.estado]}</span></p>}
+              </div>
+              <div className="boleto-corte" aria-hidden="true" />
+              <div className="boleto-pie">
+                {e.qr ? <img src={e.qr} alt={`QR de la entrada ${i + 1}`} /> : <p>Esta entrada fue anulada.</p>}
+                <div className="mono">{o.nombre} · Orden #{o.numero}</div>
+              </div>
             </div>
           ))}
           <p><button className="sec" onClick={guardarImagenes}><Download size={16} /> Guardar las entradas</button></p>
@@ -105,6 +121,7 @@ export default function Orden() {
         {aviso && <p className="suave chico" role="status">{aviso}</p>}
         <p className="suave chico"><Ticket size={13} style={{ verticalAlign: "-2px" }} /> Este link queda guardado en <Link to="/mis-entradas">Mis entradas</Link>, en este teléfono.</p>
       </section>
+      <PiePublico />
     </main>
   );
 }

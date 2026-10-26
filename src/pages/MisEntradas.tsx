@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import PiePublico from "../components/PiePublico";
 import { olvidarOrden, ordenesGuardadas } from "../comprador";
 import { fechaLarga } from "../format";
 
@@ -21,6 +22,7 @@ export default function MisEntradas() {
           <p className="suave chico" style={{ margin: "6px 0 0" }}>Orden #{o.numero} · {fechaLarga(o.fechaInicio)}</p>
         </article>
       ))}
+      <PiePublico />
     </main>
   );
 }
