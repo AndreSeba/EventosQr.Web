@@ -1,14 +1,19 @@
-import { useState } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { msgError } from "../api";
 import { useSesion } from "../session";
 
 export default function Login() {
   const { usuario, login } = useSesion();
   const nav = useNavigate();
-  const loc = useLocation();
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
+  // Que los buscadores no indexen el acceso del equipo
+  useEffect(() => {
+    const meta = Object.assign(document.createElement("meta"), { name: "robots", content: "noindex, nofollow" });
+    document.head.appendChild(meta);
+    return () => meta.remove();
+  }, []);
   if (usuario) return <Navigate to="/" replace />;
 
   async function enviar(e: React.FormEvent<HTMLFormElement>) {
@@ -18,7 +23,7 @@ export default function Login() {
     setError("");
     try {
       await login(String(f.get("email")), String(f.get("password")));
-      nav((loc.state as { desde?: string } | null)?.desde ?? "/", { replace: true });
+      nav("/", { replace: true });
     } catch (err) {
       setError(msgError(err));
     } finally {

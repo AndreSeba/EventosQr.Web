@@ -1,0 +1,5 @@
+# Los buscadores pueden mostrar las páginas de compra (/e/...) y la de organizadores.
+# Los links privados de cada orden no se indexan. (El acceso del equipo NO se nombra acá: se protege con «noindex» en su página.)
+User-agent: *
+Disallow: /o/
+Disallow: /mis-entradas

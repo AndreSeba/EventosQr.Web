@@ -7,8 +7,10 @@ Front de EventosQr (repo hermano de `../EventosQr.Api`, como InventoryPlatform /
 | Ruta | Rol | Qué hace |
 |---|---|---|
 | `/e/:slug` | público | Compra: elegir tipo de ticket, QR de pago, datos y comprobante |
-| `/login` | — | Acceso del equipo (correo + contraseña) |
-| `/` | todos | Panel: selector de evento, link de venta, ventas, tickets emitidos/usados, por tipo, acciones rápidas |
+| `/o/:acceso`, `/mis-entradas` | público | Link de la orden (estado y QR) y órdenes guardadas en el teléfono |
+| `/organizadores` | público | Página para organizadores (publicidad) |
+| `/equipo` | — | Acceso del equipo (correo + contraseña). No se enlaza desde ninguna página pública |
+| `/` | todos | Panel: selector de evento, link de venta, ventas, tickets emitidos/usados, por tipo, acciones rápidas. **Sin sesión muestra la página para organizadores**, no el acceso del equipo |
 | `/eventos`, `/eventos/:id` | admin | Crear/editar eventos, imagen, QR de pago, tipos de ticket con precio y cupo, equipo, archivar |
 | `/ordenes` | admin | Revisar comprobantes: aprobar / rechazar (con motivo) / reenviar correo |
 | `/tickets` | todos | Lista de invitados con búsqueda y filtros Todos/Válido/Usado/Anulado; emitir invitaciones/VIP (admin, RRPP); anular (admin) |
@@ -33,9 +35,10 @@ Es un sitio estático (`dist/`): Netlify, Cloudflare Pages o Vercel. Variable de
 
 La cámara del escáner requiere **HTTPS** (los hostings anteriores ya lo dan).
 
-**Vista previa al compartir (Cloudflare Pages):** `functions/e/[slug].ts` pone el nombre, la fecha y la imagen del evento en el HTML de
+**Vista previa al compartir (solo Cloudflare Pages):** `functions/e/[slug].ts` pone el nombre, la fecha y la imagen del evento en el HTML de
 `/e/<evento>` para que WhatsApp e Instagram armen la vista previa. Necesita la variable `API_URL` (URL pública del API) en
-Settings > Environment variables; si no está, usa `VITE_API_URL`, y si tampoco, sirve la página sin cambios. En Netlify o Vercel esa carpeta no se usa.
+Settings > Environment variables; si no está, usa `VITE_API_URL`, y si tampoco, sirve la página sin cambios.
+**Hoy el sitio está en Render (static site), donde esa carpeta no se ejecuta**: la vista previa queda pendiente (ver `PENDIENTES.md` del API).
 
 ## Notas
 

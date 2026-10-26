@@ -40,7 +40,7 @@ export default function Perfil() {
         {msg && <div className={`msg ${msg.ok ? "ok" : "err"}`}>{msg.t}</div>}
         <p><button>Guardar</button></p>
       </form>
-      <button className="sec" onClick={() => { salir(); nav("/login"); }}>Cerrar sesión</button>
+      <button className="sec" onClick={() => { salir(); nav("/equipo"); }}>Cerrar sesión</button>
     </>
   );
 }

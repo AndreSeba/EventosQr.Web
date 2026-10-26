@@ -1,4 +1,5 @@
-import { Navigate, NavLink, Outlet, Route, Routes, useLocation } from "react-router-dom";
+import type { ReactNode } from "react";
+import { Navigate, NavLink, Outlet, Route, Routes } from "react-router-dom";
 import { Building2, CalendarDays, LayoutDashboard, ScanQrCode, Ticket, Wallet, type LucideIcon } from "lucide-react";
 import { useSesion } from "./session";
 import { ETIQUETA_ROL } from "./roles";
@@ -27,11 +28,12 @@ const ITEMS: { a: string; Ico: LucideIcon; txt: string; roles: Rol[] }[] = [
   { a: "/organizaciones", Ico: Building2, txt: "Clientes", roles: ["superadmin"] },
 ];
 
-function Protegido({ roles }: { roles?: Rol[] }) {
+/** Rutas del panel. Sin sesión NO se manda al login: quien borra la dirección de una compra o prueba /ordenes
+ *  cae en la página pública (sinSesion o la raíz). El acceso del equipo vive en /equipo y no se enlaza desde ninguna página pública. */
+function Protegido({ roles, sinSesion }: { roles?: Rol[]; sinSesion?: ReactNode }) {
   const { usuario, cargando } = useSesion();
-  const loc = useLocation();
   if (cargando) return <div className="pagina"><p className="suave">Cargando…</p></div>;
-  if (!usuario) return <Navigate to="/login" state={{ desde: loc.pathname }} replace />;
+  if (!usuario) return sinSesion ?? <Navigate to="/" replace />;
   if (roles && !roles.includes(usuario.rol)) return <Navigate to="/" replace />;
   return (
     <>
@@ -60,9 +62,12 @@ export default function App() {
       <Route path="/o/:acceso" element={<Orden />} />
       <Route path="/mis-entradas" element={<MisEntradas />} />
       <Route path="/organizadores" element={<Organizadores />} />
-      <Route path="/login" element={<Login />} />
-      <Route element={<Protegido />}>
+      <Route path="/equipo" element={<Login />} />
+      {/* La raíz: con sesión, el panel; sin sesión, la página para organizadores (no el login) */}
+      <Route element={<Protegido sinSesion={<Organizadores />} />}>
         <Route path="/" element={<Panel />} />
+      </Route>
+      <Route element={<Protegido />}>
         <Route path="/tickets" element={<Tickets />} />
         <Route path="/perfil" element={<Perfil />} />
       </Route>
