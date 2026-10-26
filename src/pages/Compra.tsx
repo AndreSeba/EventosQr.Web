@@ -5,6 +5,7 @@ import { api, msgError } from "../api";
 import { agregarAlCalendario, compartir, linkWhatsapp } from "../compartir";
 import { datosGuardados, guardarDatos, refDelLink } from "../comprador";
 import { sugerirCorreo } from "../correo";
+import Pasos from "../components/Pasos";
 import PiePublico from "../components/PiePublico";
 import { dinero, fechaCorta, hora } from "../format";
 import { comprimirImagen } from "../imagen";
@@ -29,9 +30,20 @@ export default function Compra() {
   const [email2, setEmail2] = useState(recordados?.email ?? "");
   const [precargado, setPrecargado] = useState(!!recordados);
 
+  const [enComprobante, setEnComprobante] = useState(false);
+
   useEffect(() => {
     api<EventoPublico>(`/public/eventos/${slug}`).then(setEv).catch((e) => setError(msgError(e)));
   }, [slug]);
+  // Cuando la sección del comprobante llega a la mitad de arriba de la pantalla, el comprador ya pasó por el pago
+  // (rootMargin -50% abajo: asomarse al pie de una pantalla grande no cuenta)
+  useEffect(() => {
+    const el = document.getElementById("paso3");
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) setEnComprobante(true); }, { rootMargin: "0px 0px -50% 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [ev]);
 
   if (error) return <main className="publica"><div className="msg err">{error}</div></main>;
   if (!ev) return <main className="publica"><p className="suave">Cargando…</p></main>;
@@ -80,7 +92,8 @@ export default function Compra() {
 
   const elegido = ev.tipos.find((t) => t.id === tipoId);
   const total = elegido ? elegido.precio * cantidad : 0;
-  const paso = elegido ? 2 : 1;
+  // Sin conexión con el banco no se sabe cuándo pagó: llegar al comprobante (o empezar a llenarlo) es la señal del paso 3
+  const paso = !elegido ? 1 : enComprobante ? 3 : 2;
   const sugerido = sugerirCorreo(email);
   const correosIguales = email.trim().toLowerCase() === email2.trim().toLowerCase();
 
@@ -111,13 +124,9 @@ export default function Compra() {
       {ev.descripcion && <p>{ev.descripcion}</p>}
       {ev.edadMinima && <p className="suave chico">Mayores de {ev.edadMinima}: en la puerta pueden pedirte el carnet.</p>}
 
-      <ol className="pasos" aria-label="Pasos de la compra">
-        {["Entradas", "Pago", "Comprobante", "Tu entrada"].map((t, i) => (
-          <li key={t} className={i + 1 < paso ? "hecho" : i + 1 === paso ? "actual" : ""}><span className="n">{i + 1}</span>{t}</li>
-        ))}
-      </ol>
+      <Pasos actual={paso} secciones={["paso1", "paso2", "paso3", null]} />
 
-      <section className="card">
+      <section className="card" id="paso1">
         <h2>1. Elegí tu entrada</h2>
         {ev.tipos.length === 0 && <p className="suave">No hay entradas a la venta por ahora.</p>}
         {ev.tipos.map((t) => {
@@ -151,7 +160,7 @@ export default function Compra() {
         })}
       </section>
 
-      <section className="card">
+      <section className="card" id="paso2">
         <h2>2. Pagá</h2>
         <p className="suave">
           {elegido
@@ -163,7 +172,7 @@ export default function Compra() {
 
       <section className="card" id="paso3">
         <h2>3. Subí tu comprobante</h2>
-        <form onSubmit={enviar}>
+        <form onSubmit={enviar} onFocus={() => setEnComprobante(true)}>
           {precargado && (
             <p className="suave chico">Precargamos tus datos de la última vez. <button type="button" className="mini sec" onClick={noSoyYo}>No soy yo</button></p>
           )}

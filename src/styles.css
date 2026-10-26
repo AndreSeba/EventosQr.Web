@@ -150,6 +150,9 @@ code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; font-siz
 .pasos li.actual .n { border-color: #000; }
 .pasos li.hecho { color: #fff; }
 .pasos li.hecho .n { background: #fff; color: #000; border-color: #fff; }
+.pasos li button { all: unset; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.pasos li button:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; border-radius: 999px; }
+.publica .card[id^="paso"] { scroll-margin-top: 12px; }
 
 /* Tickets: tarjetas con cantidad − n + */
 .tipo { flex-wrap: wrap; }

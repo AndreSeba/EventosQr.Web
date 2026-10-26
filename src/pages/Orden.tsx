@@ -4,6 +4,7 @@ import { CalendarPlus, Copy, Download, MapPin, MessageCircle, Ticket } from "luc
 import { api, msgError } from "../api";
 import { agregarAlCalendario, copiar, linkWhatsapp } from "../compartir";
 import { guardarOrden } from "../comprador";
+import Pasos from "../components/Pasos";
 import PiePublico from "../components/PiePublico";
 import { dinero, fechaCorta, hora } from "../format";
 import type { OrdenPublica } from "../types";
@@ -62,6 +63,9 @@ export default function Orden() {
         {ev.lugar && <li><span>Lugar</span><b>{ev.lugar}</b></li>}
       </ul>
       {ev.edadMinima && <p className="suave chico">Mayores de {ev.edadMinima}: en la puerta pueden pedirte el carnet.</p>}
+      {o.estado !== "Rechazada" && (
+        <Pasos actual={4} completo={o.estado === "Aprobada"} etiquetaActual={o.estado === "Pendiente" ? "Tu entrada · en revisión" : undefined} />
+      )}
 
       <section className="card">
         <div className="fila entre"><strong>{o.cantidad} × {o.tipo}</strong><span className={`badge b-${o.estado}`}>{o.estado}</span></div>
