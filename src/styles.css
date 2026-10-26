@@ -4,7 +4,8 @@
   --ok: #2ecc71; --mal: #ff4d4d; --aviso: #ffcc33;
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; background: var(--bg); color: var(--texto); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+html, body { margin: 0; background: var(--bg); color: var(--texto); font-family: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+input, select, textarea, button { font-family: inherit; }
 body { background: radial-gradient(800px 420px at 50% -15%, #2a2a2a 0%, transparent 65%), var(--bg); min-height: 100vh; }
 a { color: var(--acento2); }
 h1 { font-size: 1.9rem; font-weight: 800; letter-spacing: -.02em; margin: 6px 0 10px; color: #fff; }
@@ -118,11 +119,15 @@ label.acepto input { margin-top: 3px; }
 code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; font-size: .85em; word-break: break-all; }
 
 /* ============ Personalidad de las páginas públicas (compra, orden, organizadores) ============ */
-:root { --display: "Anton", "Arial Narrow", Impact, sans-serif; --mono: "JetBrains Mono", ui-monospace, Consolas, monospace; }
+/* Una sola familia (Archivo). «Títulos» = la misma letra angosta y gruesa; «datos» = cifras de ancho fijo y algo de espaciado */
+:root { --display: "Archivo", "Arial Narrow", sans-serif; --mono: "Archivo", system-ui, sans-serif; }
+.publica h1, .publica h2, .titulo-evento, .tipo .nombre-tipo, .pie-publico .marca-pie, .boleto-cabeza .titulo, .como li::before {
+  font-stretch: 68%; font-weight: 800; }
+.ceja, .mono, .datos, .pasos, .cantidad output, .cantidad .suave, .pie-publico { font-variant-numeric: tabular-nums; }
 .publica { max-width: 640px; }
-.publica h1, .publica h2, .titulo-evento { font-family: var(--display); font-weight: 400; letter-spacing: .01em; text-transform: uppercase; }
-.publica h2 { font-size: 1.35rem; letter-spacing: .03em; }
-.ceja { font-family: var(--mono); font-size: .72rem; letter-spacing: .22em; text-transform: uppercase; color: var(--acento2); margin: 0 0 8px;
+.publica h1, .publica h2, .titulo-evento { font-family: var(--display); letter-spacing: -.005em; text-transform: uppercase; }
+.publica h2 { font-size: 1.35rem; letter-spacing: .01em; }
+.ceja { font-family: var(--mono); font-size: .78rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--acento2); margin: 0 0 8px;
   display: flex; align-items: center; gap: 10px; }
 .ceja::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,.45), transparent); }
 .mono { font-family: var(--mono); }
