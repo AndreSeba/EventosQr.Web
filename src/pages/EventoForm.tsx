@@ -32,7 +32,7 @@ export default function EventoForm() {
     const f = new FormData(e.currentTarget);
     const body = {
       nombre: f.get("nombre"), descripcion: f.get("descripcion"), lugar: f.get("lugar"), direccionUrl: f.get("direccionUrl"),
-      fechaInicio: deInputFecha(String(f.get("fechaInicio"))), moneda: f.get("moneda"),
+      fechaInicio: deInputFecha(String(f.get("fechaInicio"))), moneda: f.get("moneda"), edadMinima: f.get("edadMinima"), whatsapp: f.get("whatsapp"),
       ...(nuevo && usuario?.rol === "superadmin" ? { orgId: f.get("orgId") } : {}),
     };
     setGuardando(true);
@@ -116,6 +116,11 @@ export default function EventoForm() {
         <input id="fechaInicio" name="fechaInicio" type="datetime-local" required defaultValue={ev ? aInputFecha(ev.fechaInicio) : ""} />
         <label htmlFor="moneda">Moneda</label>
         <select id="moneda" name="moneda" defaultValue={ev?.moneda ?? "BOB"}>{MONEDAS.map((m) => <option key={m}>{m}</option>)}</select>
+        <div className="fila" style={{ alignItems: "flex-end" }}>
+          <div style={{ flex: 1 }}><label htmlFor="edadMinima">Edad mínima (opcional)</label><input id="edadMinima" name="edadMinima" type="number" min={1} max={99} placeholder="ej. 18" defaultValue={ev?.edadMinima ?? ""} /></div>
+          <div style={{ flex: 2 }}><label htmlFor="whatsapp">WhatsApp para dudas (opcional)</label><input id="whatsapp" name="whatsapp" type="tel" maxLength={25} placeholder="71234598" defaultValue={ev?.whatsapp ?? ""} /></div>
+        </div>
+        <p className="suave chico">El WhatsApp aparece como botón de ayuda en la compra y en el link de cada orden.</p>
         <p><button disabled={guardando}>{guardando ? "Guardando…" : nuevo ? "Crear evento" : "Guardar cambios"}</button></p>
       </form>
 
@@ -130,6 +135,7 @@ export default function EventoForm() {
             <label htmlFor="qr">QR de pago</label>
             <input id="qr" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => subir("qr-pago", e.target.files?.[0])} />
             <p className="suave chico">Link de venta: <a href={ev.linkVenta} target="_blank" rel="noreferrer">{ev.linkVenta}</a></p>
+            <p className="suave chico">Link para un promotor: agregá <code>?r=</code> y su nombre, ej. <code>{ev.linkVenta}?r=luciana-gil</code>. Sus ventas se ven en Órdenes.</p>
           </div>
 
           <div className="card">

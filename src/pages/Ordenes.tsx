@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Check, ExternalLink, Mail, TriangleAlert } from "lucide-react";
+import { Check, ExternalLink, Link2, Mail, TriangleAlert } from "lucide-react";
 import { api, msgError } from "../api";
+import { copiar } from "../compartir";
 import SelectorEvento from "../components/SelectorEvento";
 import { dinero, fechaHora } from "../format";
 import { useSesion } from "../session";
@@ -14,12 +15,30 @@ export default function Ordenes() {
   const [lista, setLista] = useState<Orden[] | null>(null);
   const [msg, setMsg] = useState<{ ok: boolean; t: string } | null>(null);
   const [trabajando, setTrabajando] = useState<string | null>(null);
+  const [aprobadas, setAprobadas] = useState<Orden[]>([]);
 
   const cargar = () => {
     if (!evento) return Promise.resolve();
     return api<Orden[]>(`/ordenes?eventoId=${evento.id}&estado=${estado}`).then(setLista).catch((e) => setMsg({ ok: false, t: msgError(e) }));
   };
   useEffect(() => { setLista(null); cargar(); }, [evento?.id, estado]);
+  // Ventas por promotor (?r= en el link de venta): se cuentan solo las órdenes aprobadas
+  useEffect(() => {
+    if (evento) api<Orden[]>(`/ordenes?eventoId=${evento.id}&estado=Aprobada`).then(setAprobadas).catch(() => setAprobadas([]));
+  }, [evento?.id]);
+  const porPromotor = Object.values(
+    aprobadas.reduce<Record<string, { ref: string; ordenes: number; entradas: number; monto: number }>>((acc, o) => {
+      const k = o.ref ?? "";
+      acc[k] ??= { ref: k, ordenes: 0, entradas: 0, monto: 0 };
+      acc[k].ordenes++; acc[k].entradas += o.cantidad; acc[k].monto += o.monto;
+      return acc;
+    }, {}),
+  ).sort((a, b) => b.entradas - a.entradas);
+
+  async function copiarLink(o: Orden) {
+    const ok = await copiar(`${location.origin}/o/${o.acceso}`);
+    setMsg(ok ? { ok: true, t: `Link de la orden #${o.numero} copiado: mandáselo al comprador si no le llegó el correo.` } : { ok: false, t: "No se pudo copiar el link." });
+  }
 
   async function accion(o: Orden, ruta: string, body?: unknown) {
     setTrabajando(o.id);
@@ -50,15 +69,32 @@ export default function Ordenes() {
         {ESTADOS.map((e) => <button key={e} className={`chip ${estado === e ? "act" : ""}`} onClick={() => setEstado(e)}>{e || "Todas"}</button>)}
       </div>
       {msg && <div className={`msg ${msg.ok ? "ok" : "err"}`}>{msg.t}</div>}
+      {porPromotor.some((p) => p.ref) && (
+        <details className="card">
+          <summary style={{ cursor: "pointer", fontWeight: 700 }}>Ventas por promotor</summary>
+          <table className="tabla">
+            <thead><tr><th>Promotor</th><th>Órdenes</th><th>Entradas</th><th>Monto</th></tr></thead>
+            <tbody>
+              {porPromotor.map((p) => (
+                <tr key={p.ref}><td>{p.ref || <span className="suave">sin promotor</span>}</td><td>{p.ordenes}</td><td>{p.entradas}</td><td>{evento && dinero(p.monto, evento.moneda)}</td></tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="suave chico">Solo órdenes aprobadas. El link de un promotor es el link de venta con <code>?r=nombre</code>.</p>
+        </details>
+      )}
       {lista?.length === 0 && <div className="vacio">No hay órdenes {estado && `«${estado}»`}.</div>}
       {lista?.map((o) => (
         <article key={o.id} className="card">
           <div className="fila entre"><strong>#{o.numero} · {o.nombre}</strong><span className={`badge b-${o.estado}`}>{o.estado}</span></div>
           <div className="suave chico" style={{ margin: "6px 0" }}>
             {o.email} · {o.telefono}<br />
-            {o.cantidad} × {o.tipo} · <b>{evento && dinero(o.monto, evento.moneda)}</b> · {fechaHora(o.creadaEn)}
+            {o.cantidad} × {o.tipo} · <b>{evento && dinero(o.monto, evento.moneda)}</b> · {fechaHora(o.creadaEn)}{o.ref && <> · vía <b>{o.ref}</b></>}
           </div>
-          <button className="mini sec" onClick={() => verComprobante(o)}>Ver comprobante <ExternalLink size={13} /></button>
+          <div className="fila">
+            <button className="mini sec" onClick={() => verComprobante(o)}>Ver comprobante <ExternalLink size={13} /></button>
+            <button className="mini sec" onClick={() => copiarLink(o)}><Link2 size={13} /> Copiar link de la orden</button>
+          </div>
           {o.estado === "Pendiente" && (
             <>
               <div className="fila" style={{ marginTop: 10 }}>

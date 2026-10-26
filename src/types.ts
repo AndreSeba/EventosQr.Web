@@ -8,6 +8,7 @@ export type Tipo = { id: string; nombre: string; precio: number; precioRegular: 
 export type Evento = {
   id: string; orgId: string; organizacion: string | null; slug: string; nombre: string; descripcion: string | null; lugar: string | null; direccionUrl: string | null;
   fechaInicio: string; moneda: string; archivado: boolean; imagenUrl: string | null; qrPagoUrl: string | null; linkVenta: string;
+  edadMinima: number | null; whatsapp: string | null;
 };
 export type EventoDetalle = Evento & { tipos: Tipo[]; equipoIds: string[] };
 
@@ -20,6 +21,18 @@ export type Resumen = {
 export type Orden = {
   id: string; numero: number; eventoId: string; tipo: string; nombre: string; telefono: string; email: string; cantidad: number; monto: number;
   estado: "Pendiente" | "Aprobada" | "Rechazada"; motivoRechazo: string | null; creadaEn: string; correoEnviadoEn: string | null; correoError: string | null;
+  acceso: string; ref: string | null; // acceso: token del link de la orden; ref: promotor que trajo la venta
+};
+
+/** Lo que ve el comprador en el link de su orden (/o/:acceso). */
+export type OrdenPublica = {
+  numero: number; nombre: string; correo: string; cantidad: number; monto: number; tipo: string;
+  estado: "Pendiente" | "Aprobada" | "Rechazada"; motivoRechazo: string | null; creadaEn: string;
+  evento: {
+    slug: string; nombre: string; fechaInicio: string; lugar: string | null; direccionUrl: string | null; moneda: string;
+    imagenUrl: string | null; whatsapp: string | null; edadMinima: number | null;
+  };
+  entradas: { tipo: string; estado: "valida" | "usada" | "anulada"; qr: string | null }[];
 };
 
 export type Entrada = {
@@ -30,6 +43,7 @@ export type Entrada = {
 export type EventoPublico = {
   slug: string; nombre: string; descripcion: string | null; lugar: string | null; direccionUrl: string | null; fechaInicio: string;
   moneda: string; imagenUrl: string | null; qrPagoUrl: string | null; maxPorOrden: number; maxComprobanteMb: number;
+  edadMinima: number | null; whatsapp: string | null;
   tipos: { id: string; nombre: string; precio: number; precioRegular: number | null; disponibles: number | null }[];
 };
 

@@ -33,6 +33,10 @@ Es un sitio estático (`dist/`): Netlify, Cloudflare Pages o Vercel. Variable de
 
 La cámara del escáner requiere **HTTPS** (los hostings anteriores ya lo dan).
 
+**Vista previa al compartir (Cloudflare Pages):** `functions/e/[slug].ts` pone el nombre, la fecha y la imagen del evento en el HTML de
+`/e/<evento>` para que WhatsApp e Instagram armen la vista previa. Necesita la variable `API_URL` (URL pública del API) en
+Settings > Environment variables; si no está, usa `VITE_API_URL`, y si tampoco, sirve la página sin cambios. En Netlify o Vercel esa carpeta no se usa.
+
 ## Notas
 
 - El token de sesión se guarda en `localStorage` (el front y el API están en dominios distintos). Expira a las 12 h; si el API lo rechaza, el front cierra sesión solo.
