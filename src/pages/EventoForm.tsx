@@ -118,9 +118,9 @@ export default function EventoForm() {
         <select id="moneda" name="moneda" defaultValue={ev?.moneda ?? "BOB"}>{MONEDAS.map((m) => <option key={m}>{m}</option>)}</select>
         <div className="fila" style={{ alignItems: "flex-end" }}>
           <div style={{ flex: 1 }}><label htmlFor="edadMinima">Edad mínima (opcional)</label><input id="edadMinima" name="edadMinima" type="number" min={1} max={99} placeholder="ej. 18" defaultValue={ev?.edadMinima ?? ""} /></div>
-          <div style={{ flex: 2 }}><label htmlFor="whatsapp">WhatsApp para dudas (opcional)</label><input id="whatsapp" name="whatsapp" type="tel" maxLength={25} placeholder="71234598" defaultValue={ev?.whatsapp ?? ""} /></div>
+          <div style={{ flex: 2 }}><label htmlFor="whatsapp">WhatsApp del organizador (opcional)</label><input id="whatsapp" name="whatsapp" type="tel" maxLength={25} placeholder="71234598" defaultValue={ev?.whatsapp ?? ""} /></div>
         </div>
-        <p className="suave chico">El WhatsApp aparece como botón de ayuda en la compra y en el link de cada orden.</p>
+        <p className="suave chico">A este número escriben los compradores con dudas: aparece como botón de WhatsApp en la compra y en el link de cada orden. Si lo dejás vacío, el botón no se muestra.</p>
         <p><button disabled={guardando}>{guardando ? "Guardando…" : nuevo ? "Crear evento" : "Guardar cambios"}</button></p>
       </form>
 
