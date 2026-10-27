@@ -197,7 +197,7 @@ export default function Compra() {
           <input id="comprobante" name="comprobante" type="file" required accept="image/jpeg,image/png,image/webp,application/pdf" />
           <label className="acepto">
             <input type="checkbox" required />
-            <span>Acepto que usen mi nombre, celular y correo solo para emitir mi entrada y avisarme si el evento cambia.</span>
+            <span>Acepto que usen mi nombre, celular y correo solo para emitir mi entrada.</span>
           </label>
           <input className="oculto" name="web" tabIndex={-1} autoComplete="off" aria-hidden="true" />
           <p><button disabled={enviando || !ev.tipos.length}>{enviando ? "Enviando…" : "Enviar comprobante"}</button></p>
