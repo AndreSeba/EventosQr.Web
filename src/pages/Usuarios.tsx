@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, msgError } from "../api";
+import Pager, { usePaginas } from "../components/Pager";
 import { ETIQUETA_ROL } from "../roles";
 import { useSesion } from "../session";
 import type { Organizacion, Rol, UsuarioFila } from "../types";
@@ -17,6 +18,7 @@ export default function Usuarios() {
 
   const cargar = () => api<UsuarioFila[]>(`/usuarios${filtroOrg ? `?orgId=${filtroOrg}` : ""}`).then(setLista).catch((e) => setMsg({ ok: false, t: msgError(e) }));
   useEffect(() => { cargar(); }, [filtroOrg]);
+  const pag = usePaginas(lista, filtroOrg);
   useEffect(() => { if (esSuper) api<Organizacion[]>("/organizaciones").then(setOrgs).catch(() => {}); }, [esSuper]);
 
   async function crear(e: React.FormEvent<HTMLFormElement>) {
@@ -77,7 +79,7 @@ export default function Usuarios() {
         </>
       )}
 
-      {lista?.map((u) => {
+      {pag.items?.map((u) => {
         const propio = u.id === usuario?.id;
         const fijo = u.rol === "superadmin"; // el rol de superadmin no se cambia desde la pantalla
         return (
@@ -96,6 +98,7 @@ export default function Usuarios() {
           </div>
         );
       })}
+      <Pager p={pag} />
     </>
   );
 }

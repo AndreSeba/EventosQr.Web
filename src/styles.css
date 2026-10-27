@@ -196,3 +196,6 @@ code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; font-siz
 .como li::before { content: counter(paso); flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #fff; color: #000;
   font-family: var(--display); font-size: 1.1rem; }
 .btn.grande { padding: 15px 22px; font-size: 1.05rem; }
+
+/* Paginado */
+.pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: 12px 0 4px; }

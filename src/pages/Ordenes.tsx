@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { Check, ExternalLink, Link2, Mail, TriangleAlert } from "lucide-react";
+import { Check, ExternalLink, FileSpreadsheet, Link2, Mail, TriangleAlert } from "lucide-react";
 import { api, msgError } from "../api";
 import { copiar } from "../compartir";
+import Pager, { usePaginas } from "../components/Pager";
 import SelectorEvento from "../components/SelectorEvento";
+import { descargarExcel, nombreArchivo } from "../excel";
 import { dinero, fechaHora } from "../format";
 import { useSesion } from "../session";
 import type { Orden } from "../types";
@@ -34,6 +36,23 @@ export default function Ordenes() {
       return acc;
     }, {}),
   ).sort((a, b) => b.entradas - a.entradas);
+
+  const pag = usePaginas(lista, `${evento?.id}|${estado}`);
+
+  // Todos los compradores del evento (todas las órdenes, sea cual sea el filtro de pantalla), con teléfono y monto
+  async function exportarCompradores() {
+    if (!evento) return;
+    setMsg(null);
+    try {
+      const todas = await api<Orden[]>(`/ordenes?eventoId=${evento.id}&estado=`);
+      const filas = [...todas].sort((a, b) => a.numero - b.numero);
+      await descargarExcel(nombreArchivo("compradores", evento.nombre), "Compradores",
+        [{ titulo: "Orden", ancho: 8 }, { titulo: "Nombre", ancho: 32 }, { titulo: "Teléfono", ancho: 16 }, { titulo: "Correo", ancho: 34 }, { titulo: "Tipo", ancho: 20 }, { titulo: "Cantidad", ancho: 10 }, { titulo: `Monto (${evento.moneda})`, ancho: 14 }, { titulo: "Estado", ancho: 12 }, { titulo: "Promotor", ancho: 16 }, { titulo: "Fecha", ancho: 20 }, { titulo: "Correo con la entrada", ancho: 22 }, { titulo: "Motivo de rechazo", ancho: 30 }],
+        filas.map((o) => [o.numero, o.nombre, o.telefono, o.email, o.tipo, o.cantidad, o.monto, o.estado, o.ref ?? "", fechaHora(o.creadaEn),
+          o.estado !== "Aprobada" ? "" : o.correoError ? "Falló" : o.correoEnviadoEn ? "Enviado" : "Sin enviar", o.motivoRechazo ?? ""]));
+      setMsg({ ok: true, t: `Lista de compradores descargada: ${filas.length} órdenes (todas, también pendientes y rechazadas).` });
+    } catch (e) { setMsg({ ok: false, t: msgError(e) }); }
+  }
 
   async function copiarLink(o: Orden) {
     const ok = await copiar(`${location.origin}/o/${o.acceso}`);
@@ -68,6 +87,7 @@ export default function Ordenes() {
       <div className="chips">
         {ESTADOS.map((e) => <button key={e} className={`chip ${estado === e ? "act" : ""}`} onClick={() => setEstado(e)}>{e || "Todas"}</button>)}
       </div>
+      {evento && <div className="fila" style={{ margin: "8px 0" }}><button className="mini sec" onClick={exportarCompradores}><FileSpreadsheet size={14} /> Excel: todos los compradores</button></div>}
       {msg && <div className={`msg ${msg.ok ? "ok" : "err"}`}>{msg.t}</div>}
       {porPromotor.some((p) => p.ref) && (
         <details className="card">
@@ -84,7 +104,7 @@ export default function Ordenes() {
         </details>
       )}
       {lista?.length === 0 && <div className="vacio">No hay órdenes {estado && `«${estado}»`}.</div>}
-      {lista?.map((o) => (
+      {pag.items?.map((o) => (
         <article key={o.id} className="card">
           <div className="fila entre"><strong>#{o.numero} · {o.nombre}</strong><span className={`badge b-${o.estado}`}>{o.estado}</span></div>
           <div className="suave chico" style={{ margin: "6px 0" }}>
@@ -119,6 +139,7 @@ export default function Ordenes() {
           )}
         </article>
       ))}
+      <Pager p={pag} />
     </>
   );
 }

@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Mail, Plus } from "lucide-react";
+import { FileSpreadsheet, Mail, Plus } from "lucide-react";
 import { api, msgError } from "../api";
+import Pager, { usePaginas } from "../components/Pager";
 import SelectorEvento from "../components/SelectorEvento";
+import { descargarExcel, nombreArchivo } from "../excel";
 import { fechaHora } from "../format";
 import { useSesion } from "../session";
 import { esAdmin } from "../roles";
@@ -31,6 +33,32 @@ export default function Tickets() {
   useEffect(() => { if (evento && puedeEmitir) api<EventoDetalle>(`/eventos/${evento.id}`).then(setDetalle).catch(() => {}); }, [evento?.id]);
 
   const tiposManuales = detalle?.tipos.filter((t) => t.activo && t.categoria !== "venta") ?? [];
+  const pag = usePaginas(lista, `${evento?.id}|${estado}|${q}`);
+
+  // Los Excel traen SIEMPRE todas las entradas del evento, sin importar el filtro o la búsqueda que haya en pantalla
+  async function exportar(tipo: "asistencia" | "todos") {
+    if (!evento) return;
+    setMsg(null);
+    try {
+      const todas = await api<Entrada[]>(`/entradas?eventoId=${evento.id}&estado=&q=`);
+      const porNombre = (a: Entrada, b: Entrada) => a.nombre.localeCompare(b.nombre, "es", { sensitivity: "base" });
+      if (tipo === "asistencia") {
+        // Para la puerta: sin las anuladas, en orden alfabético, con una columna en blanco para anotar a mano
+        const vivas = todas.filter((e) => e.estado !== "anulada").sort(porNombre);
+        await descargarExcel(nombreArchivo("asistencia", evento.nombre), "Asistencia",
+          [{ titulo: "N°", ancho: 6 }, { titulo: "Nombre", ancho: 34 }, { titulo: "Tipo", ancho: 20 }, { titulo: "Estado", ancho: 12 }, { titulo: "Hora de ingreso", ancho: 20 }, { titulo: "Observaciones / firma", ancho: 28 }],
+          vivas.map((e, i) => [i + 1, e.nombre, e.tipo, e.estado === "usada" ? "Ingresó" : "Pendiente", e.usadaEn ? fechaHora(e.usadaEn) : "", ""]));
+        setMsg({ ok: true, t: `Lista de asistencia descargada: ${vivas.length} personas (sin las entradas anuladas).` });
+      } else {
+        const etiqueta = { valida: "Válido", usada: "Ingresó", anulada: "Anulado" };
+        const todos = [...todas].sort(porNombre);
+        await descargarExcel(nombreArchivo("invitados", evento.nombre), "Invitados",
+          [{ titulo: "Nombre", ancho: 34 }, { titulo: "Correo", ancho: 34 }, { titulo: "Tipo", ancho: 20 }, { titulo: "Origen", ancho: 12 }, { titulo: "Estado", ancho: 12 }, { titulo: "Hora de ingreso", ancho: 20 }, { titulo: "Motivo de anulación", ancho: 30 }, { titulo: "Emitida", ancho: 20 }],
+          todos.map((e) => [e.nombre, e.email ?? "", e.tipo, e.deOrden ? "Compra" : "Manual", etiqueta[e.estado], e.usadaEn ? fechaHora(e.usadaEn) : "", e.anuladaMotivo ?? "", fechaHora(e.creadaEn)]));
+        setMsg({ ok: true, t: `Lista de todas las personas descargada: ${todos.length} entradas (incluye las anuladas).` });
+      }
+    } catch (err) { setMsg({ ok: false, t: msgError(err) }); }
+  }
 
   async function emitir(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -86,13 +114,19 @@ export default function Tickets() {
         </form>
       )}
 
+      {evento && (
+        <div className="fila" style={{ marginTop: 10 }}>
+          <button className="mini sec" onClick={() => exportar("asistencia")}><FileSpreadsheet size={14} /> Excel: lista de asistencia</button>
+          {puedeEmitir && <button className="mini sec" onClick={() => exportar("todos")}><FileSpreadsheet size={14} /> Excel: todas las personas</button>}
+        </div>
+      )}
       <div style={{ marginTop: 10 }}><input placeholder="Buscar invitado o correo…" value={q} onChange={(e) => setQ(e.target.value)} /></div>
       <div className="chips">{FILTROS.map(([v, t]) => <button key={v} className={`chip ${estado === v ? "act" : ""}`} onClick={() => setEstado(v)}>{t}</button>)}</div>
       {msg && <div className={`msg ${msg.ok ? "ok" : "err"}`}>{msg.t}</div>}
       {!evento && <div className="vacio">Elegí un evento.</div>}
       {lista?.length === 0 && <div className="vacio"><b>Todavía no hay tickets</b><br />Cuando se emitan, aparecerán acá con su estado.</div>}
       {lista && lista.length > 0 && <p className="suave chico">{lista.length} ticket(s)</p>}
-      {lista?.map((en) => (
+      {pag.items?.map((en) => (
         <div key={en.id} className="card" style={{ margin: "8px 0" }}>
           <div className="fila entre">
             <strong>{en.nombre}</strong>
@@ -111,6 +145,7 @@ export default function Tickets() {
           )}
         </div>
       ))}
+      <Pager p={pag} />
     </>
   );
 }
