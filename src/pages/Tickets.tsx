@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { FileSpreadsheet, Mail, Plus } from "lucide-react";
+import { FileSpreadsheet, Mail, Pencil, Plus } from "lucide-react";
 import { api, msgError } from "../api";
 import Pager, { usePaginas } from "../components/Pager";
 import SelectorEvento from "../components/SelectorEvento";
@@ -46,15 +46,15 @@ export default function Tickets() {
         // Para la puerta: sin las anuladas, en orden alfabético, con una columna en blanco para anotar a mano
         const vivas = todas.filter((e) => e.estado !== "anulada").sort(porNombre);
         await descargarExcel(nombreArchivo("asistencia", evento.nombre), "Asistencia",
-          [{ titulo: "N°", ancho: 6 }, { titulo: "Nombre", ancho: 34 }, { titulo: "Tipo", ancho: 20 }, { titulo: "Estado", ancho: 12 }, { titulo: "Hora de ingreso", ancho: 20 }, { titulo: "Observaciones / firma", ancho: 28 }],
-          vivas.map((e, i) => [i + 1, e.nombre, e.tipo, e.estado === "usada" ? "Ingresó" : "Pendiente", e.usadaEn ? fechaHora(e.usadaEn) : "", ""]));
+          [{ titulo: "N°", ancho: 6 }, { titulo: "Nombre", ancho: 34 }, { titulo: "CI", ancho: 14 }, { titulo: "Entrada", ancho: 10 }, { titulo: "Tipo", ancho: 20 }, { titulo: "Estado", ancho: 12 }, { titulo: "Hora de ingreso", ancho: 20 }, { titulo: "Observaciones / firma", ancho: 28 }],
+          vivas.map((e, i) => [i + 1, e.nombre, e.ci ?? "", (e.totalOrden ?? 0) > 1 ? `${e.numeroEnOrden} de ${e.totalOrden}` : "", e.tipo, e.estado === "usada" ? "Ingresó" : "Pendiente", e.usadaEn ? fechaHora(e.usadaEn) : "", ""]));
         setMsg({ ok: true, t: `Lista de asistencia descargada: ${vivas.length} personas (sin las entradas anuladas).` });
       } else {
         const etiqueta = { valida: "Válido", usada: "Ingresó", anulada: "Anulado" };
         const todos = [...todas].sort(porNombre);
         await descargarExcel(nombreArchivo("invitados", evento.nombre), "Invitados",
-          [{ titulo: "Nombre", ancho: 34 }, { titulo: "Correo", ancho: 34 }, { titulo: "Tipo", ancho: 20 }, { titulo: "Origen", ancho: 12 }, { titulo: "Estado", ancho: 12 }, { titulo: "Hora de ingreso", ancho: 20 }, { titulo: "Motivo de anulación", ancho: 30 }, { titulo: "Emitida", ancho: 20 }],
-          todos.map((e) => [e.nombre, e.email ?? "", e.tipo, e.deOrden ? "Compra" : "Manual", etiqueta[e.estado], e.usadaEn ? fechaHora(e.usadaEn) : "", e.anuladaMotivo ?? "", fechaHora(e.creadaEn)]));
+          [{ titulo: "Nombre", ancho: 34 }, { titulo: "CI", ancho: 14 }, { titulo: "Correo", ancho: 34 }, { titulo: "Tipo", ancho: 20 }, { titulo: "Origen", ancho: 12 }, { titulo: "Compra N°", ancho: 11 }, { titulo: "Entrada", ancho: 10 }, { titulo: "Estado", ancho: 12 }, { titulo: "Hora de ingreso", ancho: 20 }, { titulo: "Motivo de anulación", ancho: 30 }, { titulo: "Emitida", ancho: 20 }],
+          todos.map((e) => [e.nombre, e.ci ?? "", e.email ?? "", e.tipo, e.deOrden ? "Compra" : "Manual", e.ordenNumero, (e.totalOrden ?? 0) > 1 ? `${e.numeroEnOrden} de ${e.totalOrden}` : "", etiqueta[e.estado], e.usadaEn ? fechaHora(e.usadaEn) : "", e.anuladaMotivo ?? "", fechaHora(e.creadaEn)]));
         setMsg({ ok: true, t: `Lista de todas las personas descargada: ${todos.length} entradas (incluye las anuladas).` });
       }
     } catch (err) { setMsg({ ok: false, t: msgError(err) }); }
@@ -80,6 +80,18 @@ export default function Tickets() {
     if (!motivo) return;
     try { await api(`/entradas/${en.id}/anular`, { body: { motivo } }); setMsg({ ok: true, t: "Entrada anulada." }); cargar(); }
     catch (err) { setMsg({ ok: false, t: msgError(err) }); }
+  }
+
+  async function editarTitular(en: Entrada) {
+    const nombre = prompt(`Nombre de quien entra con esta entrada`, en.nombre);
+    if (nombre === null) return;
+    const ci = prompt("Cédula (opcional). Dejalo vacío para no cambiarla.", en.ci ?? "");
+    if (ci === null) return;
+    try {
+      await api(`/entradas/${en.id}/titular`, { method: "PUT", body: { nombre: nombre.trim() || undefined, ...(ci.trim() && ci.trim() !== (en.ci ?? "") ? { ci: ci.trim() } : {}) } });
+      setMsg({ ok: true, t: "Titular actualizado." });
+      cargar();
+    } catch (err) { setMsg({ ok: false, t: msgError(err) }); }
   }
 
   async function reenviar(en: Entrada) {
@@ -134,12 +146,15 @@ export default function Tickets() {
           </div>
           <div className="suave chico">
             {en.tipo}{en.email && ` · ${en.email}`}{!en.deOrden && " · manual"}
+            {en.ordenNumero != null && <> · Orden #{en.ordenNumero}{(en.totalOrden ?? 0) > 1 && ` · entrada ${en.numeroEnOrden} de ${en.totalOrden}`}{!en.titularDefinido && " · sin nombre propio"}</>}
+            {en.ci && <><br />CI: {en.ci}</>}
             {en.usadaEn && <><br />Ingresó: {fechaHora(en.usadaEn)}</>}
             {en.anuladaMotivo && <><br />Motivo: {en.anuladaMotivo}</>}
           </div>
           {en.estado === "valida" && puedeEmitir && (
             <div className="fila" style={{ marginTop: 8 }}>
               <button className="mini sec" onClick={() => reenviar(en)}><Mail size={14} /> Reenviar</button>
+              {admin && <button className="mini sec" onClick={() => editarTitular(en)}><Pencil size={14} /> Titular</button>}
               {admin && <button className="mini mal" onClick={() => anular(en)}>Anular</button>}
             </div>
           )}

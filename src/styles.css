@@ -199,3 +199,6 @@ code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; font-siz
 
 /* Paginado */
 .pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: 12px 0 4px; }
+
+/* Escaner: la cedula del titular, grande para compararla con el carnet */
+.resultado-centro .cedula { font-size: 1.5rem; font-weight: 800; letter-spacing: .04em; }

@@ -1,15 +1,71 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import { CalendarPlus, Copy, Download, MapPin, MessageCircle, Ticket } from "lucide-react";
+import { ArrowRightLeft, CalendarPlus, Copy, Download, MapPin, MessageCircle, Pencil, Ticket } from "lucide-react";
 import { api, msgError } from "../api";
 import { agregarAlCalendario, copiar, linkWhatsapp } from "../compartir";
 import { guardarOrden } from "../comprador";
 import Pasos from "../components/Pasos";
 import PiePublico from "../components/PiePublico";
 import { dinero, fechaCorta, hora } from "../format";
-import type { OrdenPublica } from "../types";
+import type { EntradaDeOrden, OrdenPublica } from "../types";
 
 const ESTADO_ENTRADA = { valida: "", usada: "YA USADA", anulada: "ANULADA" } as const;
+const CI_PATRON = "[A-Za-z0-9][A-Za-z0-9 .\\-]{2,18}[A-Za-z0-9]";
+
+/** Cambiar el nombre y la cédula de quien entra, o transferir la entrada (QR nuevo: el anterior deja de servir). */
+function EditorEntrada({ acceso, e, alCambiar }: { acceso: string; e: EntradaDeOrden; alCambiar: (mensaje: string) => void }) {
+  const [modo, setModo] = useState<"datos" | "transferir" | null>(null);
+  const [nombre, setNombre] = useState("");
+  const [ci, setCi] = useState("");
+  const [trabajando, setTrabajando] = useState(false);
+  const [error, setError] = useState("");
+  const base = `/public/ordenes/${acceso}/entradas/${e.n}`;
+
+  function abrir(m: "datos" | "transferir") {
+    setModo(m); setError(""); setCi("");
+    setNombre(m === "datos" && e.titularDefinido ? e.nombre : "");
+  }
+
+  async function guardar(ev: React.FormEvent) {
+    ev.preventDefault();
+    if (modo === "transferir" && !confirm(`Se genera un QR nuevo para ${nombre.trim()} y el QR actual de esta entrada deja de servir (también el del correo). ¿Seguir?`)) return;
+    setTrabajando(true); setError("");
+    try {
+      if (modo === "datos") await api(base, { method: "PUT", body: { ...(nombre.trim() ? { nombre: nombre.trim() } : {}), ...(ci.trim() ? { ci: ci.trim() } : {}) } });
+      else await api(`${base}/transferir`, { body: { nombre: nombre.trim(), ...(ci.trim() ? { ci: ci.trim() } : {}) } });
+      setModo(null);
+      alCambiar(modo === "datos" ? "Datos guardados." : "Entrada transferida: ya tiene un QR nuevo, el anterior dejó de servir.");
+    } catch (err) { setError(msgError(err)); }
+    finally { setTrabajando(false); }
+  }
+
+  if (!e.editable) return null;
+  return (
+    <div style={{ marginTop: 10 }}>
+      {!modo && (
+        <div className="fila">
+          <button type="button" className="mini sec" onClick={() => abrir("datos")}><Pencil size={13} /> Nombre y cédula</button>
+          <button type="button" className="mini sec" onClick={() => abrir("transferir")} disabled={e.transferencias >= 3}><ArrowRightLeft size={13} /> Transferir</button>
+        </div>
+      )}
+      {modo && (
+        <form onSubmit={guardar} className="card" style={{ margin: 0 }}>
+          <strong>{modo === "datos" ? "¿Quién entra con esta entrada?" : "Pasarle la entrada a otra persona"}</strong>
+          {modo === "transferir" && <p className="suave chico">Se genera un <b>QR nuevo</b> para esa persona. El QR actual (el de esta pantalla y el del correo) <b>deja de servir</b>, así que borralo o no lo uses más.</p>}
+          <label htmlFor={`n${e.n}`}>Nombre y apellido{modo === "datos" ? " (opcional)" : ""}</label>
+          <input id={`n${e.n}`} value={nombre} onChange={(x) => setNombre(x.target.value)} required={modo === "transferir"} minLength={2} maxLength={100} autoComplete="off" />
+          <label htmlFor={`c${e.n}`}>Cédula (opcional)</label>
+          <input id={`c${e.n}`} value={ci} onChange={(x) => setCi(x.target.value)} maxLength={20} autoComplete="off" pattern={CI_PATRON} title="4 a 20 letras o números" />
+          {error && <p className="msg err" role="alert">{error}</p>}
+          <div className="fila">
+            <button disabled={trabajando}>{trabajando ? "Guardando…" : modo === "datos" ? "Guardar" : "Transferir"}</button>
+            <button type="button" className="sec" onClick={() => setModo(null)}>Cancelar</button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
 
 /** Link de la orden: el comprador ve el estado y, si se aprobó, sus QR. Funciona aunque el correo no le haya llegado. */
 export default function Orden() {
@@ -85,22 +141,25 @@ export default function Orden() {
       {o.estado === "Aprobada" && (
         <section className="card">
           <h2>Tu entrada</h2>
+          {aviso && <p className="msg ok" role="status">{aviso}</p>}
           <p className="suave chico">Mostrá el QR en la puerta. <b>Cada QR entra una sola vez</b>: quien tenga este link o una captura puede usarlo.</p>
           {o.entradas.map((e, i) => (
-            <div key={i} className={`boleto${e.estado !== "valida" ? " apagado" : ""}`}>
+            <div key={e.n} className={`boleto${e.estado !== "valida" ? " apagado" : ""}`}>
               <div className="boleto-cabeza">
-                <div className="mono">{e.tipo.toUpperCase()} · ENTRADA {i + 1} DE {o.entradas.length}</div>
+                <div className="mono">{e.tipo.toUpperCase()} · ENTRADA {e.n} DE {o.entradas.length}</div>
                 <div className="titulo">{ev.nombre}</div>
                 <div className="mono">{fechaCorta(ev.fechaInicio)} · {hora(ev.fechaInicio)}{ev.lugar && ` · ${ev.lugar}`}</div>
                 {ESTADO_ENTRADA[e.estado] && <p style={{ margin: "10px 0 0" }}><span className={`badge b-${e.estado}`}>{ESTADO_ENTRADA[e.estado]}</span></p>}
               </div>
               <div className="boleto-corte" aria-hidden="true" />
               <div className="boleto-pie">
-                {e.qr ? <img src={e.qr} alt={`QR de la entrada ${i + 1}`} /> : <p>Esta entrada fue anulada.</p>}
-                <div className="mono">{o.nombre} · Orden #{o.numero}</div>
+                {e.qr ? <img src={e.qr} alt={`QR de la entrada ${e.n}`} /> : <p>Esta entrada fue anulada.</p>}
+                <div className="mono">{e.nombre}{!e.titularDefinido && " (acompañante)"}{e.ciParcial && ` · CI ${e.ciParcial}`} · Orden #{o.numero}</div>
               </div>
+              <EditorEntrada acceso={acceso!} e={e} alCambiar={(m) => { avisar(m); cargar(); }} />
             </div>
           ))}
+          <p className="suave chico">Si vas con más personas, anotá el nombre de cada una (y su cédula, si querés): en la puerta pueden comparar. Para <b>pasarle una entrada a otra persona</b>, usá «Transferir»: así el QR anterior deja de servir y nadie más puede usarlo.</p>
           <p><button className="sec" onClick={guardarImagenes}><Download size={16} /> Guardar las entradas</button></p>
           <p className="suave chico">También podés mantener apretado el QR y elegir «Guardar imagen», o sacarle una captura.</p>
         </section>

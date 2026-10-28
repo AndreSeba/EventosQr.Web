@@ -31,6 +31,9 @@ export default function Compra() {
   const [precargado, setPrecargado] = useState(!!recordados);
 
   const [enComprobante, setEnComprobante] = useState(false);
+  // Cédula y nombres de quienes van a entrar: TODO opcional (la entrada sale igual si no se completa)
+  const [ciComprador, setCiComprador] = useState("");
+  const [acompanantes, setAcompanantes] = useState<{ nombre: string; ci: string }[]>([]);
 
   useEffect(() => {
     api<EventoPublico>(`/public/eventos/${slug}`).then(setEv).catch((e) => setError(msgError(e)));
@@ -66,6 +69,8 @@ export default function Compra() {
     if (!correosIguales) return setResultado({ ok: false, texto: "Los dos correos no coinciden. Revisalos: ahí te llega la entrada." });
     datos.set("tipoTicketId", tipoId);
     datos.set("cantidad", String(cantidad));
+    const titulares = [{ nombre: "", ci: ciComprador }, ...Array.from({ length: cantidad - 1 }, (_, i) => acompanantes[i] ?? { nombre: "", ci: "" })];
+    if (titulares.some((t) => t.nombre.trim() || t.ci.trim())) datos.set("titulares", JSON.stringify(titulares));
     const ref = refDelLink(ev!.slug);
     if (ref) datos.set("ref", ref);
     setEnviando(true);
@@ -193,6 +198,24 @@ export default function Compra() {
           <input id="email2" type="email" required maxLength={120} autoComplete="off" value={email2}
             onChange={(e) => setEmail2(e.target.value)} onPaste={(e) => e.preventDefault()} />
           {email2 && !correosIguales && <p className="suave chico">Los correos no coinciden.</p>}
+          <details className="card" style={{ margin: "12px 0" }}>
+            <summary style={{ cursor: "pointer", fontWeight: 700 }}>Cédula y nombre de quienes entran (opcional)</summary>
+            <p className="suave chico">Sirve para que en la puerta puedan comprobar que la entrada es de quien la usa. Si no lo llenás ahora, podés hacerlo (o cambiarlo) después desde el link de tu orden.</p>
+            <label htmlFor="ci0">Tu cédula (opcional)</label>
+            <input id="ci0" value={ciComprador} onChange={(e) => setCiComprador(e.target.value)} maxLength={20} autoComplete="off" inputMode="text"
+              pattern="[A-Za-z0-9][A-Za-z0-9 .\-]{2,18}[A-Za-z0-9]" title="4 a 20 letras o números" />
+            {Array.from({ length: cantidad - 1 }, (_, i) => (
+              <div key={i}>
+                <label htmlFor={`an${i}`}>Acompañante {i + 1}: nombre (opcional)</label>
+                <input id={`an${i}`} maxLength={100} autoComplete="off" value={acompanantes[i]?.nombre ?? ""}
+                  onChange={(e) => setAcompanantes((a) => { const n = [...a]; n[i] = { nombre: e.target.value, ci: n[i]?.ci ?? "" }; return n; })} />
+                <label htmlFor={`ac${i}`}>Acompañante {i + 1}: cédula (opcional)</label>
+                <input id={`ac${i}`} maxLength={20} autoComplete="off" value={acompanantes[i]?.ci ?? ""}
+                  pattern="[A-Za-z0-9][A-Za-z0-9 .\-]{2,18}[A-Za-z0-9]" title="4 a 20 letras o números"
+                  onChange={(e) => setAcompanantes((a) => { const n = [...a]; n[i] = { nombre: n[i]?.nombre ?? "", ci: e.target.value }; return n; })} />
+              </div>
+            ))}
+          </details>
           <label htmlFor="comprobante">Comprobante (imagen o PDF, máx. {ev.maxComprobanteMb} MB)</label>
           <input id="comprobante" name="comprobante" type="file" required accept="image/jpeg,image/png,image/webp,application/pdf" />
           <label className="acepto">
@@ -221,7 +244,7 @@ export default function Compra() {
         </details>
         <details>
           <summary>¿Puedo pasarle la entrada a otra persona?</summary>
-          <p>Sí: mandale el QR o el link de tu orden. Cada QR entra una sola vez: vale el primero que se escanea en la puerta.</p>
+          <p>Sí. Desde el link de tu orden podés cambiar el nombre de quien entra o <b>transferir</b> la entrada: se genera un QR nuevo para esa persona y el anterior deja de servir. Cada QR entra una sola vez: vale el primero que se escanea en la puerta, y en la puerta pueden pedir la cédula.</p>
         </details>
         <details>
           <summary>¿Y si no me llega el correo?</summary>

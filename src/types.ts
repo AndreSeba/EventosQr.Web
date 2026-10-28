@@ -32,12 +32,22 @@ export type OrdenPublica = {
     slug: string; nombre: string; fechaInicio: string; lugar: string | null; direccionUrl: string | null; moneda: string;
     imagenUrl: string | null; whatsapp: string | null; edadMinima: number | null;
   };
-  entradas: { tipo: string; estado: "valida" | "usada" | "anulada"; qr: string | null }[];
+  entradas: EntradaDeOrden[];
+};
+
+/** Una entrada vista desde el link de la orden. `n` es su posición (1..N) dentro de la orden. */
+export type EntradaDeOrden = {
+  n: number; tipo: string; estado: "valida" | "usada" | "anulada"; qr: string | null;
+  nombre: string; titularDefinido: boolean; ciParcial: string | null; transferencias: number;
+  /** true mientras la entrada esté vigente y el evento no haya empezado. */
+  editable: boolean;
 };
 
 export type Entrada = {
   id: string; nombre: string; email: string | null; estado: "valida" | "usada" | "anulada"; usadaEn: string | null;
   anuladaMotivo: string | null; creadaEn: string; tipo: string; categoria: string; deOrden: boolean;
+  ci: string | null; titularDefinido: boolean; transferencias: number;
+  ordenNumero: number | null; numeroEnOrden: number | null; totalOrden: number | null;
 };
 
 export type EventoPublico = {
@@ -47,8 +57,11 @@ export type EventoPublico = {
   tipos: { id: string; nombre: string; precio: number; precioRegular: number | null; disponibles: number | null }[];
 };
 
+/** Para que la puerta compare con la persona: «Entrada 2 de 3», cédula (si la dio) y si el nombre es el suyo o el del comprador. */
+export type DatosTitular = { ci?: string | null; numeroEnOrden?: number | null; totalOrden?: number | null; titularDefinido?: boolean };
+
 export type ResultadoEscaneo =
-  | { estado: "VALIDA"; nombre: string; tipo: string }
-  | { estado: "YA_USADA"; nombre: string; tipo: string; usadaEn: string }
+  | ({ estado: "VALIDA"; nombre: string; tipo: string } & DatosTitular)
+  | ({ estado: "YA_USADA"; nombre: string; tipo: string; usadaEn: string } & DatosTitular)
   | { estado: "ANULADA"; nombre: string }
   | { estado: "INVALIDA" };

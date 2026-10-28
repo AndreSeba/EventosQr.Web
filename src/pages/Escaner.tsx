@@ -9,6 +9,9 @@ type Res = ResultadoEscaneo | { estado: "ERROR"; mensaje: string };
 
 /** Cuánto se queda el resultado en pantalla (ms). Los casos que NO dejan pasar duran más para que el staff alcance a leerlos. */
 const DURACION: Record<Res["estado"], number> = { VALIDA: 2500, YA_USADA: 4500, ANULADA: 4500, INVALIDA: 4000, ERROR: 3500 };
+/** Una entrada con cédula o de una orden de varias necesita más tiempo para compararla con la persona. */
+const conDatosParaComparar = (r: Res) => ("ci" in r && !!r.ci) || ("totalOrden" in r && (r.totalOrden ?? 0) > 1);
+const duracion = (r: Res) => DURACION[r.estado] + (conDatosParaComparar(r) ? 1500 : 0);
 /** Si el mismo QR sigue frente a la cámara, no se vuelve a consultar hasta que haya desaparecido este tiempo (ms).
  *  Así dejar el celular del cliente apuntado no convierte un VÁLIDA en un «YA USADA». */
 const AUSENCIA_PARA_RELEER = 3000;
@@ -48,7 +51,7 @@ export default function Escaner() {
     }
     navigator.vibrate?.(r.estado === "VALIDA" ? 120 : [200, 80, 200]);
     setRes(r);
-    cierre.current = setTimeout(cerrar, DURACION[r.estado]);
+    cierre.current = setTimeout(cerrar, duracion(r));
   }, [cerrar]);
 
   const alDetectar = useCallback((texto: string) => {
@@ -110,10 +113,14 @@ export default function Escaner() {
             <div className="grande">{a.titulo}</div>
             {"nombre" in res && <div className="quien">{res.nombre}</div>}
             {"tipo" in res && res.tipo && <div className="detalle">{res.tipo}</div>}
+            {"numeroEnOrden" in res && res.numeroEnOrden != null && (res.totalOrden ?? 0) > 1 && (
+              <div className="detalle">Entrada {res.numeroEnOrden} de {res.totalOrden} de la misma compra{res.titularDefinido === false && " · sin nombre propio (acompañante)"}</div>
+            )}
+            {"ci" in res && res.ci && <div className="detalle cedula">CI: {res.ci}</div>}
             {res.estado === "YA_USADA" && <div className="detalle">Primer ingreso: {fechaHora(res.usadaEn)}</div>}
             {res.estado === "INVALIDA" && <div className="detalle">Este código no existe o es de otro evento.</div>}
             {res.estado === "ERROR" && <div className="detalle">{res.mensaje}</div>}
-            <div className="barra-tiempo"><span key={res.estado + (("nombre" in res && res.nombre) || "")} style={{ animationDuration: `${DURACION[res.estado]}ms` }} /></div>
+            <div className="barra-tiempo"><span key={res.estado + (("nombre" in res && res.nombre) || "")} style={{ animationDuration: `${duracion(res)}ms` }} /></div>
             <div className="toca">Toca para cerrar</div>
           </div>
         </div>
