@@ -63,8 +63,8 @@ export default function App() {
       <Route path="/mis-entradas" element={<MisEntradas />} />
       <Route path="/organizadores" element={<Organizadores />} />
       <Route path="/equipo" element={<Login />} />
-      {/* La raíz: con sesión, el panel; sin sesión, la página para organizadores (no el login) */}
-      <Route element={<Protegido sinSesion={<Organizadores />} />}>
+      {/* La raíz: con sesión, el panel; sin sesión, el login (la página para organizadores sigue en /organizadores) */}
+      <Route element={<Protegido sinSesion={<Login />} />}>
         <Route path="/" element={<Panel />} />
       </Route>
       <Route element={<Protegido />}>
